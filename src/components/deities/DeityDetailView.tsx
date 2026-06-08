@@ -4,30 +4,28 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  BookOpen, 
-  GraduationCap, 
-  Compass, 
-  Smile, 
-  Volume2, 
-  VolumeX, 
-  Sparkles, 
-  Info,
+import {
+  Volume2,
+  VolumeX,
+  Sparkles,
+  BookOpen,
   MapPin,
   Calendar,
+  Compass,
   Layers,
-  Award,
-  Link2,
-  Bell,
-  Sun,
-  Flame,
   ArrowRight,
+  Maximize2,
+  X,
+  Play,
+  Pause,
   ChevronRight,
-  HelpCircle
+  Info
 } from "lucide-react";
-import { DEITIES_DATA, DeityDetail, DeityEpisode, ScholarVerse, DeityFamilyRelation } from "@/lib/deities-data";
+
+import { ENHANCED_DEITIES_DATA, EnhancedDeity, TimelineStage, GalleryItem, GeographyItem, ScriptureRelation, FestivalItem, EnhancedMantra } from "@/lib/deities-enhanced-data";
 import { useLanguageStore } from "@/store/useLanguageStore";
 import { useSacredSound } from "@/lib/sacred-audio";
+
 import DiyaFlame from "../ui/DiyaFlame";
 import TempleDoor from "../ui/TempleDoor";
 import GoldParticleField from "../effects/GoldParticleField";
@@ -40,322 +38,90 @@ interface DeityDetailViewProps {
   slug: string;
 }
 
-// Localization Dictionary
-const LOCALIZATION = {
-  EN: {
-    backDir: "Back to Directory",
-    backEncy: "Back to Encyclopaedia",
-    whoTheyAre: "Who They Are",
-    names: "Sacred Names",
-    sanskritName: "Sanskrit Name",
-    meaning: "Cosmic Meaning",
-    role: "Cosmic Role",
-    divineFunc: "Divine Function",
-    vehicle: "Divine Vehicle",
-    weapons: "Weapons",
-    objects: "Sacred Objects",
-    divineDomain: "Divine Domain",
-    originStory: "Origin & Ascent",
-    episodes: "Sacred Legends",
-    teachings: "Eternal Teachings",
-    familyTree: "Cosmic Lineage",
-    scriptures: "Associated Scriptures",
-    temples: "Sacred Temples",
-    festivals: "Major Festivals",
-    mantras: "Primary Mantras",
-    meditation: "Meditation Essence",
-    storyMode: "Story Mode",
-    scholarMode: "Scholar Mode",
-    visualMode: "Visual Mode",
-    kidsMode: "Kids Mode",
-    moral: "Moral Lesson",
-    funFacts: "Fun Facts",
-    bellTitle: "Ring Temple Bell",
-    aartiTitle: "Perform Aarti",
-    droneTitle: "Vedic Drone",
-    active: "Active",
-    offering: "Inner Sanctum Altar",
-    interactiveHelp: "Click below to sound the temple bells or ignite the sacred flame."
-  },
-  HI: {
-    backDir: "निर्देशिका पर वापस",
-    backEncy: "विश्वकोश पर वापस",
-    whoTheyAre: "वे कौन हैं",
-    names: "पवित्र नाम",
-    sanskritName: "संस्कृत नाम",
-    meaning: "ब्रह्मांडीय अर्थ",
-    role: "ब्रह्मांडीय भूमिका",
-    divineFunc: "दिव्य कार्य",
-    vehicle: "दिव्य वाहन",
-    weapons: "अस्त्र-शस्त्र",
-    objects: "पवित्र वस्तुएं",
-    divineDomain: "दिव्य क्षेत्र",
-    originStory: "उत्पत्ति और प्रभाव",
-    episodes: "दिव्य कथाएँ",
-    teachings: "शाश्वत शिक्षाएँ",
-    familyTree: "पारिवारिक वंशवृक्ष",
-    scriptures: "सम्बद्ध ग्रन्थ",
-    temples: "प्रमुख मन्दिर",
-    festivals: "मुख्य उत्सव",
-    mantras: "महामन्त्र",
-    meditation: "ध्यान स्वरूप",
-    storyMode: "कथा मोड",
-    scholarMode: "विद्वान मोड",
-    visualMode: "दृश्य मोड",
-    kidsMode: "बाल मोड",
-    moral: "नैतिक शिक्षा",
-    funFacts: "रोचक तथ्य",
-    bellTitle: "घंटी बजाएं",
-    aartiTitle: "आरती करें",
-    droneTitle: "वैदिक सुर",
-    active: "सक्रिय",
-    offering: "गर्भगृह वेदी",
-    interactiveHelp: "मन्दिर की घंटी बजाने या पवित्र दीया जलाने के लिए नीचे क्लिक करें।"
-  },
-  SA: {
-    backDir: "निर्देशिकां प्रति",
-    backEncy: "ज्ञानकोशं प्रति",
-    whoTheyAre: "के ते",
-    names: "पवित्र नामानि",
-    sanskritName: "संस्कृत नाम",
-    meaning: "ब्रह्माण्डीयार्थः",
-    role: "ब्रह्माण्डभूमिका",
-    divineFunc: "दिव्यकार्यम्",
-    vehicle: "वाहनम्",
-    weapons: "आयुधानि",
-    objects: "पवित्रवस्तूनि",
-    divineDomain: "दिव्य क्षेत्रम्",
-    originStory: "उत्पत्ति कथा",
-    episodes: "मुख्यप्रसङ्गाः",
-    teachings: "शाश्वतशिक्षाः",
-    familyTree: "पारिवारिकवंशवृक्षः",
-    scriptures: "सम्बद्धग्रन्थाः",
-    temples: "मन्दिराणि",
-    festivals: "उत्सवाः",
-    mantras: "महामन्त्राः",
-    meditation: "ध्यान स्वरूपम्",
-    storyMode: "आख्यान रूपम्",
-    scholarMode: "पण्डित रूपम्",
-    visualMode: "चित्र रूपम्",
-    kidsMode: "बाल रूपम्",
-    moral: "नैतिक पाठः",
-    funFacts: "रोचक तथ्यानि",
-    bellTitle: "घण्टानादः",
-    aartiTitle: "आरती",
-    droneTitle: "वैदिक नादः",
-    active: "सक्रियम्",
-    offering: "गर्भगृह वेदी",
-    interactiveHelp: "घण्टानादं कर्तुं वा दीपं प्रज्वालयितुं अधः नुदन्तु।"
-  }
-};
-
-const DEITY_STYLES: Record<string, {
-  auricColor: string;
-  glowIntensity: string;
-  borderColor: string;
-  bgDecorations: React.ReactNode;
-}> = {
-  shiva: {
-    auricColor: "rgba(100, 180, 255, 0.25)",
-    glowIntensity: "blur-[50px] shadow-[0_0_60px_rgba(100,180,255,0.3)]",
-    borderColor: "border-sky-500/30",
-    bgDecorations: (
-      <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-0 flex items-center justify-center scale-150">
-        <span className="font-sanskrit text-9xl">🔱</span>
-      </div>
-    )
-  },
-  vishnu: {
-    auricColor: "rgba(30, 200, 180, 0.25)",
-    glowIntensity: "blur-[50px] shadow-[0_0_60px_rgba(30,200,180,0.3)]",
-    borderColor: "border-teal-500/30",
-    bgDecorations: (
-      <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-0 flex items-center justify-center scale-150">
-        <span className="font-sanskrit text-9xl">🐚</span>
-      </div>
-    )
-  },
-  brahma: {
-    auricColor: "rgba(255, 120, 100, 0.25)",
-    glowIntensity: "blur-[50px] shadow-[0_0_60px_rgba(255,120,100,0.3)]",
-    borderColor: "border-rose-400/30",
-    bgDecorations: (
-      <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-0 flex items-center justify-center scale-150">
-        <span className="font-sanskrit text-9xl">🪷</span>
-      </div>
-    )
-  },
-  saraswati: {
-    auricColor: "rgba(240, 248, 255, 0.35)",
-    glowIntensity: "blur-[50px] shadow-[0_0_60px_rgba(240,248,255,0.4)]",
-    borderColor: "border-slate-300/30",
-    bgDecorations: (
-      <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-0 flex items-center justify-center scale-150">
-        <span className="font-sanskrit text-9xl">🪕</span>
-      </div>
-    )
-  },
-  lakshmi: {
-    auricColor: "rgba(255, 215, 0, 0.3)",
-    glowIntensity: "blur-[50px] shadow-[0_0_60px_rgba(255,215,0,0.45)]",
-    borderColor: "border-amber-400/30",
-    bgDecorations: (
-      <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-0 flex items-center justify-center scale-150">
-        <span className="font-sanskrit text-9xl">🪷</span>
-      </div>
-    )
-  },
-  parvati: {
-    auricColor: "rgba(233, 30, 99, 0.25)",
-    glowIntensity: "blur-[50px] shadow-[0_0_60px_rgba(233,30,99,0.3)]",
-    borderColor: "border-pink-500/30",
-    bgDecorations: (
-      <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-0 flex items-center justify-center scale-150">
-        <span className="font-sanskrit text-9xl">🏔️</span>
-      </div>
-    )
-  },
-  ganesha: {
-    auricColor: "rgba(251, 146, 60, 0.3)",
-    glowIntensity: "blur-[50px] shadow-[0_0_60px_rgba(251,146,60,0.4)]",
-    borderColor: "border-orange-500/30",
-    bgDecorations: (
-      <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-0 flex items-center justify-center scale-150">
-        <span className="font-sanskrit text-9xl">🐘</span>
-      </div>
-    )
-  },
-  kartikeya: {
-    auricColor: "rgba(56, 189, 248, 0.25)",
-    glowIntensity: "blur-[50px] shadow-[0_0_60px_rgba(56,189,248,0.3)]",
-    borderColor: "border-sky-400/30",
-    bgDecorations: (
-      <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-0 flex items-center justify-center scale-150">
-        <span className="font-sanskrit text-9xl">🦚</span>
-      </div>
-    )
-  },
-  hanuman: {
-    auricColor: "rgba(234, 88, 12, 0.35)",
-    glowIntensity: "blur-[50px] shadow-[0_0_60px_rgba(234,88,12,0.45)]",
-    borderColor: "border-amber-600/30",
-    bgDecorations: (
-      <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-0 flex items-center justify-center scale-150">
-        <span className="font-sanskrit text-9xl">🐒</span>
-      </div>
-    )
-  },
-  durga: {
-    auricColor: "rgba(220, 38, 38, 0.3)",
-    glowIntensity: "blur-[50px] shadow-[0_0_60px_rgba(220,38,38,0.45)]",
-    borderColor: "border-red-500/30",
-    bgDecorations: (
-      <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-0 flex items-center justify-center scale-150">
-        <span className="font-sanskrit text-9xl">🦁</span>
-      </div>
-    )
-  },
-  kali: {
-    auricColor: "rgba(139, 92, 246, 0.3)",
-    glowIntensity: "blur-[50px] shadow-[0_0_60px_rgba(139,92,246,0.5)]",
-    borderColor: "border-purple-600/30",
-    bgDecorations: (
-      <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-0 flex items-center justify-center scale-150">
-        <span className="font-sanskrit text-9xl">🩸</span>
-      </div>
-    )
-  },
-  rama: {
-    auricColor: "rgba(245, 158, 11, 0.3)",
-    glowIntensity: "blur-[50px] shadow-[0_0_60px_rgba(245,158,11,0.4)]",
-    borderColor: "border-amber-500/30",
-    bgDecorations: (
-      <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-0 flex items-center justify-center scale-150">
-        <span className="font-sanskrit text-9xl">🏹</span>
-      </div>
-    )
-  },
-  krishna: {
-    auricColor: "rgba(34, 197, 94, 0.25)",
-    glowIntensity: "blur-[50px] shadow-[0_0_60px_rgba(34,197,94,0.35)]",
-    borderColor: "border-emerald-500/30",
-    bgDecorations: (
-      <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-0 flex items-center justify-center scale-150">
-        <span className="font-sanskrit text-9xl">🪈</span>
-      </div>
-    )
-  }
+// Custom Jagged Torn-Paper Separator for Section 3
+const TornPaperDivider = ({ position = "top", color = "var(--bg-primary)" }: { position?: "top" | "bottom"; color?: string }) => {
+  const isTop = position === "top";
+  return (
+    <div className={`w-full overflow-hidden leading-[0] ${isTop ? "-mb-px" : "-mt-px"} relative z-30`} style={{ color }}>
+      <svg
+        viewBox="0 0 1200 120"
+        preserveAspectRatio="none"
+        className="relative block w-full h-[25px] md:h-[45px]"
+        style={{ transform: isTop ? "rotate(180deg)" : "none" }}
+      >
+        <path
+          d="M0,0 L1200,0 L1200,80 L1170,75 L1140,85 L1110,65 L1080,78 L1050,70 L1020,83 L990,65 L960,85 L930,72 L900,80 L870,68 L840,88 L810,75 L780,82 L750,70 L720,90 L690,73 L660,85 L630,68 L600,82 L570,75 L540,85 L510,68 L480,80 L450,72 L420,83 L390,70 L360,82 L330,65 L300,80 L270,72 L240,85 L210,68 L180,80 L150,73 L120,82 L90,68 L60,85 L30,70 L0,78 Z"
+          fill="currentColor"
+        />
+      </svg>
+    </div>
+  );
 };
 
 export default function DeityDetailView({ slug }: DeityDetailViewProps) {
   const router = useRouter();
-  const deity = DEITIES_DATA[slug];
-  const ds = DEITY_STYLES[slug] || {
-    auricColor: "rgba(212, 160, 23, 0.15)",
-    glowIntensity: "blur-[40px] shadow-[0_0_40px_rgba(212,160,23,0.2)]",
-    borderColor: "border-[var(--border-gold)]/35",
-    bgDecorations: null
-  };
+  const deity = ENHANCED_DEITIES_DATA[slug];
   const currentLang = useLanguageStore((state) => state.language);
   const { playClick, playNavigate } = useSacredSound();
 
-  const [activeMode, setActiveMode] = useState<"story" | "scholar" | "visual" | "kids">("story");
-  const [aartiActive, setAartiActive] = useState(false);
-  const [mantraActive, setMantraActive] = useState(false);
+  // Audio Context & Synth States
+  const [ambientActive, setAmbientActive] = useState(false);
   const [bellRinging, setBellRinging] = useState(false);
-  const [selectedEpisodeIdx, setSelectedEpisodeIdx] = useState(0);
-
-  // Web Audio Context refs
+  const [aartiActive, setAartiActive] = useState(false);
+  
   const audioCtxRef = useRef<AudioContext | null>(null);
   const droneGainRef = useRef<GainNode | null>(null);
   const osc1Ref = useRef<OscillatorNode | null>(null);
   const osc2Ref = useRef<OscillatorNode | null>(null);
   const aartiIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Check dark mode state for styling
+  // UI Interactive States
+  const [activeIdentityCard, setActiveIdentityCard] = useState<number | null>(null);
+  const [selectedGalleryItem, setSelectedGalleryItem] = useState<GalleryItem | null>(null);
+  const [activeScriptureNode, setActiveScriptureNode] = useState<string>("Puranas");
+  const [relationshipView, setRelationshipView] = useState<"family" | "avatars" | "gurus">("family");
+  const [hoveredMantraWord, setHoveredMantraWord] = useState<string | null>(null);
+  const [activeTimelineStage, setActiveTimelineStage] = useState<number>(0);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
+  // Watch dark mode changes
   useEffect(() => {
     if (typeof window !== "undefined") {
       const observer = new MutationObserver(() => {
         setIsDarkMode(document.documentElement.classList.contains("dark"));
       });
       observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-      
-      const dark = document.documentElement.classList.contains("dark");
       requestAnimationFrame(() => {
-        setIsDarkMode(dark);
+        setIsDarkMode(document.documentElement.classList.contains("dark"));
       });
-      
       return () => observer.disconnect();
     }
   }, []);
 
-  // Clean up sounds on navigation
+  // Cleanup sounds on unmount
   useEffect(() => {
     return () => {
+      stopAmbientDrone();
       stopAartiLoop();
-      stopMantraDrone();
     };
   }, []);
 
   if (!deity) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-[var(--bg-primary)]">
-        <h2 className="text-2xl font-serif font-bold text-red-500 mb-2">Deity Profile Not Found</h2>
-        <p className="text-sm text-[var(--text-secondary)] mb-6">The requested deity profile could not be loaded.</p>
-        <Link href="/deities" className="no-underline">
-          <button className="px-5 py-2 border border-[var(--border-gold)] text-[var(--accent-gold)] rounded">
-            Return to Deities Directory
-          </button>
-        </Link>
+        <h2 className="text-2xl font-serif font-bold text-red-500 mb-2">Immersive Journey Not Found</h2>
+        <p className="text-sm text-[var(--text-secondary)] mb-6">The requested deity path could not be loaded.</p>
+        <button 
+          onClick={() => router.push("/deities")}
+          className="px-5 py-2 border border-[var(--border-gold)] text-[var(--accent-gold)] rounded cursor-pointer hover:bg-[var(--border-gold)]/10"
+        >
+          Return to Temple Directory
+        </button>
       </div>
     );
   }
 
-  const t = LOCALIZATION[currentLang] || LOCALIZATION.EN;
-
-  // Synthesis for metallic bell sound
+  // Synthesize Temple Bell Chime
   function triggerBellSound() {
     if (typeof window === "undefined") return;
     setBellRinging(true);
@@ -366,24 +132,23 @@ export default function DeityDetailView({ slug }: DeityDetailViewProps) {
       const ctx = new AudioContextClass();
       const now = ctx.currentTime;
 
-      // Pure copper alloy harmonic peaks
-      const freqs = [261.63, 523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
-      const gains = [0.9, 1.0, 0.7, 0.5, 0.3, 0.15, 0.05];
-      const decays = [2.2, 1.8, 1.4, 1.0, 0.7, 0.4, 0.15];
+      // Bell metallic resonance frequencies
+      const frequencies = [261.63, 523.25, 659.25, 783.99, 1046.50, 1318.51];
+      const gains = [0.8, 1.0, 0.65, 0.45, 0.25, 0.1];
+      const decays = [2.0, 1.6, 1.2, 0.8, 0.5, 0.2];
 
       const masterGain = ctx.createGain();
-      masterGain.gain.setValueAtTime(0.35, now);
-      masterGain.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
+      masterGain.gain.setValueAtTime(0.3, now);
+      masterGain.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
       masterGain.connect(ctx.destination);
 
-      freqs.forEach((f, idx) => {
+      frequencies.forEach((f, idx) => {
         const osc = ctx.createOscillator();
         const gainNode = ctx.createGain();
 
-        // Sine/Triangle mixes model warm metals
         osc.type = idx % 2 === 0 ? "sine" : "triangle";
         osc.frequency.setValueAtTime(f, now);
-        
+
         gainNode.gain.setValueAtTime(gains[idx], now);
         gainNode.gain.exponentialRampToValueAtTime(0.001, now + decays[idx]);
 
@@ -398,12 +163,12 @@ export default function DeityDetailView({ slug }: DeityDetailViewProps) {
     }
   }
 
-  // Aarti bell loop
+  // Aarti Bell Loop (Ringing every 1.2 seconds)
   function startAartiLoop() {
     triggerBellSound();
     aartiIntervalRef.current = setInterval(() => {
       triggerBellSound();
-    }, 1100);
+    }, 1200);
   }
 
   function stopAartiLoop() {
@@ -424,8 +189,8 @@ export default function DeityDetailView({ slug }: DeityDetailViewProps) {
     }
   }
 
-  // Sound Om frequency drone (approx 136.1 Hz)
-  function startMantraDrone() {
+  // Synthesize Meditative Tanpura/AUM Drone
+  function startAmbientDrone() {
     if (typeof window === "undefined") return;
     try {
       const AudioContextClass = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -435,51 +200,51 @@ export default function DeityDetailView({ slug }: DeityDetailViewProps) {
 
       const masterGain = ctx.createGain();
       masterGain.gain.setValueAtTime(0, now);
-      masterGain.gain.linearRampToValueAtTime(0.18, now + 1.2);
+      masterGain.gain.linearRampToValueAtTime(0.15, now + 1.5);
       masterGain.connect(ctx.destination);
       droneGainRef.current = masterGain;
 
       const filter = ctx.createBiquadFilter();
       filter.type = "lowpass";
-      filter.frequency.setValueAtTime(200, now);
+      filter.frequency.setValueAtTime(180, now);
       filter.connect(masterGain);
 
-      // 136.1 Hz (Sitar tuning frequency / cosmic C#)
+      // Root cosmic oscillator
       const osc1 = ctx.createOscillator();
-      osc1.type = "sawtooth";
-      osc1.frequency.setValueAtTime(136.1, now);
+      osc1.type = deity.mantraAmbience.type;
+      osc1.frequency.setValueAtTime(deity.mantraAmbience.frequency, now);
       osc1.connect(filter);
       osc1.start(now);
       osc1Ref.current = osc1;
 
-      // Soft detune harmony
+      // Harmony oscillator (slightly detuned for organic beating)
       const osc2 = ctx.createOscillator();
-      osc2.type = "sawtooth";
-      osc2.frequency.setValueAtTime(136.5, now);
+      osc2.type = deity.mantraAmbience.type;
+      osc2.frequency.setValueAtTime(deity.mantraAmbience.frequency * 1.5 + 0.3, now); // Fifth chord detune
       osc2.connect(filter);
       osc2.start(now);
       osc2Ref.current = osc2;
 
     } catch (e) {
-      console.warn("Drone audio blocked.");
+      console.warn("Drone audio could not start.");
     }
   }
 
-  function stopMantraDrone() {
+  function stopAmbientDrone() {
     const gain = droneGainRef.current;
     const ctx = audioCtxRef.current;
     if (ctx && gain) {
       const now = ctx.currentTime;
       try {
         gain.gain.cancelScheduledValues(now);
-        gain.gain.linearRampToValueAtTime(0, now + 0.5);
+        gain.gain.linearRampToValueAtTime(0, now + 0.6);
         setTimeout(() => {
           try {
             osc1Ref.current?.stop();
             osc2Ref.current?.stop();
             ctx.close();
           } catch (e) {}
-        }, 600);
+        }, 700);
       } catch (e) {}
     }
     audioCtxRef.current = null;
@@ -488,835 +253,1111 @@ export default function DeityDetailView({ slug }: DeityDetailViewProps) {
     osc2Ref.current = null;
   }
 
-  function toggleMantra() {
+  function toggleAmbient() {
     playClick();
-    if (mantraActive) {
-      stopMantraDrone();
-      setMantraActive(false);
+    if (ambientActive) {
+      stopAmbientDrone();
+      setAmbientActive(false);
     } else {
-      startMantraDrone();
-      setMantraActive(true);
+      startAmbientDrone();
+      setAmbientActive(true);
     }
   }
 
+  // Build Next Reading links based on current deity
   const getNextReadItems = (): NextReadItem[] => {
     const items: NextReadItem[] = [];
-    if (deity.slug === "shiva") {
-      items.push({
-        category: "Sacred Shrines",
-        titleEnglish: "12 Jyotirlingas",
-        titleSanskrit: "द्वादश ज्योतिर्लिङ्गानि",
-        description: "Explore the self-manifested pillars of Lord Shiva across the sacred land.",
-        href: "/jyotirlinga"
-      });
-      items.push({
-        category: "Deities",
-        titleEnglish: "Lord Ganesha",
-        titleSanskrit: "गणेश",
-        description: "Explore the Remover of Obstacles, Ganesha's profile.",
-        href: "/deities/ganesha"
-      });
-    } else if (deity.slug === "vishnu" || deity.slug === "krishna" || deity.slug === "rama") {
-      items.push({
-        category: "Scriptures",
-        titleEnglish: "Bhagavad Gita",
-        titleSanskrit: "श्रीमद्भगवद्गीता",
-        description: "Listen to the supreme teachings spoken directly by Lord Krishna.",
-        href: "/library/gita/chapter/1"
-      });
-      items.push({
-        category: "Deities",
-        titleEnglish: deity.slug === "krishna" ? "Lord Rama" : "Lord Krishna",
-        titleSanskrit: deity.slug === "krishna" ? "राम" : "कृष्ण",
-        description: "Explore the profiles of Vishnu's divine avatars.",
-        href: deity.slug === "krishna" ? "/deities/rama" : "/deities/krishna"
-      });
-    } else {
-      items.push({
-        category: "History",
-        titleEnglish: "Cosmic Timecycles",
-        titleSanskrit: "इतिहास कालचक्र",
-        description: "Explore the yugas, eras, and sages of our cosmic history.",
-        href: "/history"
-      });
-      items.push({
-        category: "Scriptures",
-        titleEnglish: "Vedic Hymns",
-        titleSanskrit: "वेदाः",
-        description: "Read the oldest records of spiritual realizations.",
-        href: "/library"
-      });
-    }
-    return items;
+    deity.relatedDeitySlugs.forEach((relSlug) => {
+      const relDeity = ENHANCED_DEITIES_DATA[relSlug];
+      if (relDeity) {
+        items.push({
+          category: "Divine Journeys",
+          titleEnglish: relDeity.nameEnglish,
+          titleSanskrit: relDeity.nameSanskrit,
+          description: relDeity.role,
+          href: `/deities/${relSlug}`
+        });
+      }
+    });
+    return items.slice(0, 2);
   };
 
-  // SVG Family Tree Renderer
-  const renderFamilyTreeSVG = () => {
-    // Collect related family nodes
-    const familyRelations = deity.familyTree;
-    if (familyRelations.length === 0) return null;
-
-    // We render a clean SVG triptych of relation boxes
-    // Deity in center, links to left/right/top/bottom based on relation
-    const centerX = 150;
-    const centerY = 110;
-    
-    return (
-      <div className="w-full flex justify-center py-6 bg-white/5 dark:bg-black/20 rounded-xl border border-[var(--border-gold)]/35 overflow-hidden">
-        <svg className="w-full max-w-[420px] h-[220px] text-[var(--accent-gold)]" viewBox="0 0 300 220" fill="none">
-          {/* Background matrix mesh grid */}
-          <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(212, 160, 23, 0.03)" strokeWidth="0.5" />
-          </pattern>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-          
-          {/* Connector Lines */}
-          {familyRelations.map((rel, idx) => {
-            const angle = (idx * 2 * Math.PI) / familyRelations.length;
-            const targetX = centerX + Math.cos(angle) * 90;
-            const targetY = centerY + Math.sin(angle) * 70;
-            return (
-              <g key={`line-${idx}`}>
-                <line 
-                  x1={centerX} 
-                  y1={centerY} 
-                  x2={targetX} 
-                  y2={targetY} 
-                  stroke="rgba(212, 160, 23, 0.35)" 
-                  strokeWidth="1.5" 
-                  strokeDasharray="4 4"
-                  className="animate-[dash_20s_linear_infinite]"
-                />
-                <circle cx={targetX} cy={targetY} r="3" fill="var(--accent-gold)" />
-              </g>
-            );
-          })}
-
-          {/* Central Active Node */}
-          <g transform={`translate(${centerX - 45}, ${centerY - 22})`} className="cursor-default">
-            <rect 
-              width="90" 
-              height="44" 
-              rx="6" 
-              fill="rgba(212, 160, 23, 0.15)" 
-              stroke="var(--accent-gold)" 
-              strokeWidth="2"
-            />
-            {/* Glow ring */}
-            <rect 
-              width="94" 
-              height="48" 
-              x="-2"
-              y="-2"
-              rx="8" 
-              stroke="var(--accent-gold)" 
-              strokeWidth="0.5"
-              className="animate-pulse opacity-40"
-            />
-            <text x="45" y="20" textAnchor="middle" fill="var(--text-primary)" fontSize="10" fontWeight="bold" fontFamily="var(--font-sans)">
-              {deity.nameEnglish}
-            </text>
-            <text x="45" y="34" textAnchor="middle" fill="var(--accent-gold)" fontSize="9" fontFamily="var(--font-sanskrit)">
-              {deity.nameSanskrit}
-            </text>
-          </g>
-
-          {/* Related Nodes */}
-          {familyRelations.map((rel, idx) => {
-            const angle = (idx * 2 * Math.PI) / familyRelations.length;
-            const targetX = centerX + Math.cos(angle) * 90;
-            const targetY = centerY + Math.sin(angle) * 70;
-
-            return (
-              <g 
-                key={`node-${idx}`} 
-                transform={`translate(${targetX - 40}, ${targetY - 20})`}
-                onClick={() => {
-                  if (rel.slug) {
-                    playNavigate();
-                    router.push(`/deities/${rel.slug}`);
-                  }
-                }}
-                className={rel.slug ? "cursor-pointer group" : "cursor-default"}
-              >
-                <rect 
-                  width="80" 
-                  height="36" 
-                  rx="4" 
-                  fill={isDarkMode ? "#0c0615" : "#F4ECE0"} 
-                  stroke={rel.slug ? "var(--border-gold)" : "rgba(120, 120, 120, 0.2)"} 
-                  strokeWidth="1"
-                  className="group-hover:stroke-[var(--accent-gold)] transition-all duration-300"
-                />
-                <text x="40" y="14" textAnchor="middle" fill="var(--text-primary)" fontSize="8.5" fontWeight="bold" fontFamily="var(--font-sans)">
-                  {rel.name}
-                </text>
-                <text x="40" y="27" textAnchor="middle" fill="var(--text-secondary)" fontSize="7" className="uppercase" fontFamily="var(--font-sans)">
-                  {rel.relation}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-    );
-  };
-
-  // Render SVG Timeline
-  const renderTimelineSVG = () => {
-    return (
-      <div className="w-full py-4 bg-white/5 dark:bg-black/20 rounded-xl border border-[var(--border-gold)]/35 px-4 overflow-x-auto select-none">
-        <div className="min-w-[500px] flex flex-col gap-6 relative py-4">
-          <div className="absolute top-[48px] left-[5%] right-[5%] h-[2px] bg-gradient-to-r from-[var(--border-gold)]/10 via-[var(--accent-gold)]/50 to-[var(--border-gold)]/10" />
-          
-          <div className="flex justify-between items-start">
-            {deity.temples.map((temple, idx) => {
-              const cleanedName = temple.replace(/\(.*?\)/g, "").trim();
-              return (
-                <div key={idx} className="flex flex-col items-center text-center w-[30%] relative">
-                  {/* Timeline point */}
-                  <div className="w-8 h-8 rounded-full bg-[var(--bg-primary)] border-2 border-[var(--accent-gold)] flex items-center justify-center z-10 mb-3 group-hover:scale-110 transition-transform">
-                    <span className="text-[10px] text-[var(--accent-gold)] font-bold">0{idx + 1}</span>
-                  </div>
-                  <span className="text-[11px] font-bold text-[var(--text-primary)] font-serif block truncate max-w-full">
-                    {cleanedName}
-                  </span>
-                  <span className="text-[9px] text-[var(--text-secondary)] uppercase tracking-wider block mt-1">
-                    Major Altar
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
-  };
+  // Dynamic Scripture Relation Details
+  const activeScripture = deity.scriptures.find(s => s.category === activeScriptureNode) || deity.scriptures[0];
 
   return (
     <div className={`flex flex-col min-h-screen ${isDarkMode ? "dark bg-[#030107]" : "bg-[#FAF7F2]"} text-[var(--text-primary)] transition-colors duration-500 overflow-x-hidden relative`}>
       <TempleDoor />
 
+      {/* Atmospheric backgrounds */}
       <div className="absolute inset-0 pointer-events-none z-10">
         <GoldParticleField />
       </div>
 
-      {/* Cinematic Gradient Backdrop */}
       <div 
-        className="absolute inset-0 opacity-15 pointer-events-none z-0 transition-all duration-1000"
+        className="absolute inset-0 opacity-[0.08] pointer-events-none z-0 transition-all duration-1000"
         style={{ background: deity.bgGradient }}
       />
-
-      {/* Deity Specific Background Watermark & Ornaments */}
-      {ds.bgDecorations}
 
       <div className="relative z-20">
         <Breadcrumb items={[{ label: "Deities", href: "/deities" }, { label: deity.nameEnglish }]} />
       </div>
 
-      {/* ────────────────────────────────────────────────────────
-          TRIPTYCH HERO SYSTEM (20% | 60% | 20%)
-          ──────────────────────────────────────────────────────── */}
-      <section className="relative w-full py-10 px-4 md:px-8 lg:px-12 border-b border-[var(--border-gold)]/35 overflow-hidden z-10 select-none">
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          SECTION 1: DIVINE HERO (Cinematic Fullscreen Entrance)
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative w-full min-h-[92vh] flex flex-col justify-between items-center px-4 py-8 overflow-hidden z-10 border-b border-[var(--border-gold)]/20">
         
-        {/* Responsive Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-[22%_56%_22%] gap-6 items-stretch w-full max-w-7xl mx-auto">
-          
-          {/* LEFT PANEL: WHO THEY ARE (22% focus) */}
-          <motion.div 
-            initial={{ opacity: 0, x: -35 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className={`flex flex-col gap-4 p-5 rounded-xl border border-[var(--border-gold)]/30 backdrop-blur-md justify-between
-              ${isDarkMode ? "bg-white/5 shadow-2xl" : "bg-[#FAF7F2]/85 shadow-md"}`}
+        {/* Glowing Mandala & Radiance Rings */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[480px] md:h-[480px] z-0 pointer-events-none opacity-40 dark:opacity-60">
+          <div className="concentric-circle concentric-circle-1" />
+          <div className="concentric-circle concentric-circle-2" />
+          <div className="concentric-circle concentric-circle-3" />
+          <div className="absolute inset-16 rounded-full bg-gradient-to-tr from-[var(--accent-gold)]/10 to-[#FFD700]/10 filter blur-2xl" />
+          {ambientActive && (
+            <>
+              <div className="om-pulse-ring om-pulse-ring-1" />
+              <div className="om-pulse-ring om-pulse-ring-2" />
+            </>
+          )}
+        </div>
+
+        {/* Header Controls */}
+        <div className="w-full max-w-7xl mx-auto flex justify-between items-center z-10 mb-4 px-2">
+          <button 
+            onClick={() => { playNavigate(); router.push("/deities"); }}
+            className="px-4 py-1.5 border border-[var(--border-gold)]/40 text-[var(--text-secondary)] hover:text-[var(--accent-gold)] hover:bg-[var(--border-gold)]/10 text-[10px] uppercase tracking-wider font-semibold rounded-full cursor-pointer transition-all"
           >
-            <div>
-              {/* Header Title with Temple Ornament */}
-              <div className="border-b border-[var(--border-gold)]/30 pb-2.5 mb-4 flex flex-col gap-1">
-                <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold">
-                  {t.whoTheyAre}
-                </span>
-                <h3 className="font-serif text-lg font-extrabold text-[var(--text-primary)]">
-                  {deity.nameEnglish}
-                </h3>
-              </div>
+            ← Directory
+          </button>
 
-              {/* Data Blocks */}
-              <div className="flex flex-col gap-3 text-xs leading-relaxed select-text">
-                <div>
-                  <span className="text-[9px] uppercase tracking-wider text-[var(--text-secondary)] font-bold block mb-0.5">
-                    {t.sanskritName}
-                  </span>
-                  <span className="text-base font-bold text-[var(--text-sanskrit)] dark:text-[var(--accent-gold)] font-sanskrit">
-                    {deity.nameSanskrit}
-                  </span>
-                </div>
+          {/* Sound Ambience Controller */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleAmbient}
+              className={`p-2 rounded-full border transition-all cursor-pointer flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest px-3.5
+                ${ambientActive 
+                  ? "bg-[#D4A017] border-[#FFE485] text-black shadow-lg" 
+                  : "bg-white/5 border-[var(--border-gold)]/40 text-[var(--accent-gold)] hover:bg-white/10"}`}
+              title="Toggle Vedic Tanpura Ambient Drone"
+            >
+              {ambientActive ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              <span>Drone</span>
+            </button>
+            
+            <button
+              onClick={toggleAarti}
+              className={`p-2 rounded-full border transition-all cursor-pointer flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest px-3.5
+                ${aartiActive 
+                  ? "bg-[#FF5500] border-[#FF8800] text-white shadow-lg animate-pulse" 
+                  : "bg-white/5 border-[var(--border-gold)]/40 text-[var(--accent-gold)] hover:bg-white/10"}`}
+              title="Toggle Temple Bell आरती"
+            >
+              🔥 <span>Aarti Bells</span>
+            </button>
+          </div>
+        </div>
 
-                <div>
-                  <span className="text-[9px] uppercase tracking-wider text-[var(--text-secondary)] font-bold block mb-0.5">
-                    {t.meaning}
-                  </span>
-                  <p className="text-[11px] text-[var(--text-secondary)] italic">
-                    &ldquo;{deity.meaning}&rdquo;
-                  </p>
-                </div>
-
-                <div>
-                  <span className="text-[9px] uppercase tracking-wider text-[var(--text-secondary)] font-bold block mb-0.5">
-                    {t.role}
-                  </span>
-                  <p className="text-[11px] text-[var(--text-primary)] font-medium">
-                    {deity.role}
-                  </p>
-                </div>
-
-                <div>
-                  <span className="text-[9px] uppercase tracking-wider text-[var(--text-secondary)] font-bold block mb-0.5">
-                    {t.divineFunc}
-                  </span>
-                  <p className="text-[11px] text-[var(--text-primary)]">
-                    {deity.divineFunction}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Symbols and Attributes */}
-            <div className="border-t border-[var(--border-gold)]/20 pt-4 flex flex-col gap-3 select-text text-xs">
-              <div>
-                <span className="text-[9px] uppercase tracking-wider text-[var(--text-secondary)] font-bold block mb-1">
-                  {t.vehicle}
-                </span>
-                <span className="inline-block px-2 py-0.5 bg-[var(--bg-secondary)] border border-[var(--border-gold)]/25 rounded text-[11px] font-semibold text-[var(--text-primary)]">
-                  🐾 {deity.vehicle}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-[9px] uppercase tracking-wider text-[var(--text-secondary)] font-bold block mb-1">
-                  {t.weapons}
-                </span>
-                <div className="flex flex-wrap gap-1 mt-0.5">
-                  {deity.weapons.map((w, idx) => (
-                    <span key={idx} className="px-2 py-0.5 bg-[var(--bg-secondary)] border border-[var(--border-gold)]/20 rounded text-[10px] text-[var(--text-secondary)] font-medium">
-                      ⚔️ {w}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <span className="text-[9px] uppercase tracking-wider text-[var(--text-secondary)] font-bold block mb-1">
-                  {t.objects}
-                </span>
-                <div className="flex flex-wrap gap-1 mt-0.5">
-                  {deity.sacredObjects.map((o, idx) => (
-                    <span key={idx} className="px-2 py-0.5 bg-[var(--bg-secondary)] border border-[var(--border-gold)]/20 rounded text-[10px] text-[var(--text-secondary)] font-medium">
-                      🪷 {o}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* CENTER PANEL: THE INNER SANCTUM ARTWORK (56% focus) */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.96 }}
+        {/* Central Divine Masterpiece */}
+        <div className="flex flex-col items-center justify-center text-center max-w-4xl mx-auto z-10 flex-grow my-auto">
+          {/* Main Portrait Frame */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.93 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-            className={`flex flex-col justify-between items-center text-center relative p-6 rounded-xl border overflow-hidden ${ds.borderColor}`}
-            style={{ minHeight: "450px" }}
+            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+            onClick={triggerBellSound}
+            className="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-3 border-[var(--accent-gold)] bg-[#100b16]/75 shadow-2xl flex items-center justify-center shrink-0 z-10 group cursor-pointer hover:border-[var(--accent-gold)] transition-colors duration-500 floating-idle mb-6"
           >
-            {/* Concentric glowing temple mandala behind the image */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 z-0 pointer-events-none opacity-40 dark:opacity-70">
-              <div className="concentric-circle concentric-circle-1" />
-              <div className="concentric-circle concentric-circle-2" />
-              <div className="concentric-circle concentric-circle-3" />
-              <div className={`absolute inset-10 rounded-full ${ds.auricColor} filter blur-xl`} />
-              {aartiActive && (
-                <>
-                  <div className="om-pulse-ring om-pulse-ring-1" />
-                  <div className="om-pulse-ring om-pulse-ring-2" />
-                </>
-              )}
+            <SacredImage 
+              src={deity.heroImage} 
+              alt={deity.nameEnglish} 
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              fallbackText={deity.nameSanskrit}
+              type="deity"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute inset-0 border border-white/5 rounded-full pointer-events-none group-hover:shadow-[inset_0_0_25px_rgba(255,215,0,0.35)] transition-shadow duration-500" />
+            
+            {/* Visual sound hint */}
+            <div className="absolute bottom-4 flex items-center gap-1 bg-black/40 px-2.5 py-1 rounded-full text-[9px] uppercase tracking-wider text-[#FFD700] border border-[#FFD700]/30 opacity-0 group-hover:opacity-100 transition-opacity">
+              🔔 Ring Bell
             </div>
+          </motion.div>
 
-            {/* Navigation back and title */}
-            <div className="w-full flex justify-between items-center z-10 mb-4">
-              <button 
-                onClick={() => { playNavigate(); router.push("/deities"); }}
-                className="px-2.5 py-1 border border-[var(--border-gold)]/40 text-[var(--text-secondary)] hover:text-[var(--accent-gold)] hover:bg-[var(--border-gold)]/10 text-[9px] uppercase tracking-wider font-semibold rounded cursor-pointer transition-all"
-              >
-                ← {t.backDir}
-              </button>
-
-              <span className="font-sanskrit text-sm font-bold text-[var(--text-sanskrit)] dark:text-[var(--accent-gold)] tracking-widest drop-shadow-[0_0_8px_rgba(212,160,23,0.3)]">
-                ॐ नमः शिवाय
-              </span>
-            </div>
-
-            {/* Massive Deity Artwork (70% Visual focus) */}
-            <div className="relative w-56 h-56 md:w-64 md:h-64 rounded-full overflow-hidden border-2 border-[var(--border-gold)]/50 bg-[#16121a]/80 shadow-2xl flex items-center justify-center shrink-0 z-10 group cursor-pointer hover:border-[var(--accent-gold)] transition-colors duration-500">
-              <SacredImage 
-                src={deity.heroImage} 
-                alt={deity.nameEnglish} 
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                fallbackText={deity.nameSanskrit}
-                type="deity"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
-              
-              {/* Divine Aura Glow */}
-              <div className="absolute inset-0 border border-white/5 rounded-full pointer-events-none group-hover:shadow-[inset_0_0_20px_rgba(255,215,0,0.2)] transition-shadow duration-500" />
-            </div>
-
-            {/* Sacred Typography & Interactive Bell Trigger */}
-            <div className="z-10 mt-4 flex flex-col items-center gap-1.5">
-              <span className="font-sanskrit text-4xl text-[#FFD700] font-bold tracking-widest drop-shadow-[0_4px_10px_rgba(212,160,23,0.4)]">
-                {deity.nameSanskrit}
-              </span>
-              <h2 className="text-xl md:text-2xl text-[var(--text-primary)] font-serif font-extrabold uppercase tracking-wide">
+          {/* Titles & Sacred Name Plate */}
+          <div className="flex flex-col items-center gap-2 mt-2">
+            <span className="font-sanskrit text-4xl md:text-5xl text-[#FFD700] font-bold tracking-widest drop-shadow-[0_4px_12px_rgba(212,160,23,0.5)]">
+              {deity.nameSanskrit}
+            </span>
+            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 mt-1">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl text-[var(--text-primary)] font-serif font-extrabold uppercase tracking-widest pl-2">
                 {deity.nameEnglish}
+              </h1>
+              <span className="hidden md:inline text-[var(--border-gold)] font-bold text-lg">•</span>
+              <h2 className="text-xl md:text-2xl text-[var(--accent-saffron)] font-serif font-medium">
+                {deity.nameHindi}
               </h2>
-              <span className="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-widest font-bold">
-                {deity.role}
-              </span>
             </div>
+            <p className="text-xs md:text-sm text-[var(--text-secondary)] tracking-wide font-medium italic max-w-xl px-4 mt-2">
+              &ldquo;{deity.meaning}&rdquo;
+            </p>
+            <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-[var(--accent-gold)] to-transparent mt-3" />
+            <span className="text-[10px] md:text-[11px] text-[var(--accent-gold)] font-mono uppercase tracking-widest font-bold mt-1 max-w-2xl px-4">
+              {deity.role}
+            </span>
+          </div>
+        </div>
 
-            {/* Sound offering shelf */}
-            <div className="w-full mt-6 pt-4 border-t border-[var(--border-gold)]/20 z-10 flex flex-wrap justify-center gap-3">
-              <button 
-                onClick={triggerBellSound}
-                className={`px-3.5 py-1.5 rounded bg-gradient-to-r from-[#D4A017] to-[#B8860B] text-black font-extrabold text-[10px] uppercase tracking-wider shadow-md cursor-pointer transition-all hover:shadow-[0_0_10px_rgba(212,160,23,0.3)] flex items-center gap-1.5 ${bellRinging ? "scale-95" : ""}`}
-                title={t.bellTitle}
-              >
-                🔔 {t.bellTitle}
-              </button>
-
-              <button 
-                onClick={toggleAarti}
-                className={`px-3.5 py-1.5 rounded text-[10px] uppercase tracking-wider font-extrabold border transition-all flex items-center gap-1.5 cursor-pointer
-                  ${aartiActive 
-                    ? "bg-[#FF4D00] border-[#FF8C00] text-white animate-pulse" 
-                    : "bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] border-[var(--border-gold)]/40 text-[var(--accent-gold)]"}`}
-                title={t.aartiTitle}
-              >
-                🔥 {aartiActive ? `${t.aartiTitle} (${t.active})` : t.aartiTitle}
-              </button>
-
-              <button 
-                onClick={toggleMantra}
-                className={`px-3.5 py-1.5 rounded text-[10px] uppercase tracking-wider font-extrabold border transition-all flex items-center gap-1.5 cursor-pointer
-                  ${mantraActive 
-                    ? "bg-[var(--accent-gold)] border-[#FFD700] text-black shadow-lg" 
-                    : "bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] border-[var(--border-gold)]/40 text-[var(--accent-gold)]"}`}
-                title={t.droneTitle}
-              >
-                🧘 {mantraActive ? `${t.droneTitle} (${t.active})` : t.droneTitle}
-              </button>
-            </div>
-          </motion.div>
-
-          {/* RIGHT PANEL: DIVINE DOMAIN (22% focus) */}
-          <motion.div 
-            initial={{ opacity: 0, x: 35 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className={`flex flex-col gap-4 p-5 rounded-xl border border-[var(--border-gold)]/30 backdrop-blur-md justify-between
-              ${isDarkMode ? "bg-white/5 shadow-2xl" : "bg-[#FAF7F2]/85 shadow-md"}`}
-          >
-            {/* Domain Title */}
-            <div>
-              <div className="border-b border-[var(--border-gold)]/30 pb-2.5 mb-4 flex flex-col gap-1">
-                <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold">
-                  {t.divineDomain}
-                </span>
-                <h3 className="font-serif text-lg font-extrabold text-[var(--text-primary)]">
-                  Cosmic Radiance
-                </h3>
-              </div>
-
-              {/* Power / Domain Diagram (Engraving meters) */}
-              <div className="flex flex-col gap-4 mt-2">
-                {deity.domains.map((dom, idx) => {
-                  // Generate custom deterministic layout indicators for domains
-                  const intensityVal = 95 - (idx * 8); 
-                  return (
-                    <div key={idx} className="flex flex-col gap-1 select-text">
-                      <div className="flex justify-between items-center text-[10px] font-semibold text-[var(--text-primary)]">
-                        <span>{dom}</span>
-                        <span className="text-[var(--accent-gold)] font-mono font-bold">{intensityVal}%</span>
-                      </div>
-                      <div className="w-full h-1 bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border-gold)]/10">
-                        <div 
-                          className="h-full bg-gradient-to-r from-[var(--accent-gold)] to-[#FFD700] rounded-full transition-all duration-1000"
-                          style={{ width: `${intensityVal}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Inner Sanctum Altar Box */}
-            <div className="bg-[var(--bg-secondary)] p-3.5 rounded-lg border border-[var(--border-gold)]/20 text-center flex flex-col items-center gap-1.5">
-              <DiyaFlame intensity={aartiActive ? "aarti" : "normal"} onClick={triggerBellSound} />
-              <span className="text-[9px] uppercase tracking-wider text-[var(--text-secondary)] font-mono font-bold block mt-1.5">
-                {t.offering}
-              </span>
-              <p className="text-[9px] text-[var(--text-secondary)] max-w-[150px] leading-tight mt-0.5">
-                {t.interactiveHelp}
-              </p>
-            </div>
-          </motion.div>
-
+        {/* Section 1 Footer (Interactive Diya and Help) */}
+        <div className="w-full max-w-7xl mx-auto flex flex-col items-center z-10 mt-6 select-none border-t border-[var(--border-gold)]/10 pt-4 px-4 text-center">
+          <div className="flex flex-col items-center gap-1.5 cursor-pointer" onClick={triggerBellSound}>
+            <DiyaFlame intensity={aartiActive ? "aarti" : "normal"} />
+            <span className="text-[9px] uppercase tracking-widest text-[var(--text-secondary)] font-mono font-bold mt-2">
+              Inner Sanctum Altar
+            </span>
+            <p className="text-[9px] text-[var(--text-secondary)] max-w-xs mt-0.5">
+              Click the bells, start the drone, or tap the flame to invite cosmic blessings.
+            </p>
+          </div>
+          <div className="mt-4 animate-bounce text-[var(--accent-gold)] text-xs font-mono">
+            Scroll Down &darr;
+          </div>
         </div>
       </section>
 
-      {/* ────────────────────────────────────────────────────────
-          MODE SWITCHER TABS
-          ──────────────────────────────────────────────────────── */}
-      <section className="max-w-4xl mx-auto px-4 w-full py-6 z-20">
-        <div className="flex flex-wrap items-center justify-center border-b border-[var(--border-gold)]/30 pb-0.5 gap-1 select-none">
-          {(["story", "scholar", "visual", "kids"] as const).map((mode) => {
-            const isActive = activeMode === mode;
-            let label = t.storyMode;
-            let icon = <BookOpen className="w-3.5 h-3.5" />;
-            
-            if (mode === "scholar") {
-              label = t.scholarMode;
-              icon = <GraduationCap className="w-3.5 h-3.5" />;
-            } else if (mode === "visual") {
-              label = t.visualMode;
-              icon = <Compass className="w-3.5 h-3.5" />;
-            } else if (mode === "kids") {
-              label = t.kidsMode;
-              icon = <Smile className="w-3.5 h-3.5" />;
-            }
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          SECTION 2: DIVINE IDENTITY (Interactive Cards Grid)
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative w-full py-16 px-4 md:px-8 max-w-7xl mx-auto z-10">
+        <div className="text-center mb-12 flex flex-col items-center">
+          <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold block mb-1">
+            Visual Anatomy
+          </span>
+          <h2 className="font-serif text-2xl md:text-3xl font-extrabold text-[var(--text-primary)]">
+            Divine Attributes & Symbolism
+          </h2>
+          <div className="h-[2px] w-20 bg-[var(--accent-gold)] mt-2" />
+          <p className="text-xs text-[var(--text-secondary)] max-w-md mt-2">
+            Click any card to unveil the cosmic significance behind their items, abodes, weapons, and sacred forces.
+          </p>
+        </div>
 
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {[
+            { label: "Titles & Epithets", val: deity.identity.titles.join(", "), icon: "👑" },
+            { label: "Sacred Weapons", val: deity.identity.weapons.join(", "), icon: "⚔️" },
+            { label: "Sacred Symbols", val: deity.identity.symbols.join(", "), icon: "🔱" },
+            { label: "Divine Mount", val: deity.identity.mount, icon: "🐾" },
+            { label: "Consort / Aspect", val: deity.identity.consort, icon: "🪷" },
+            { label: "Cosmic Loka", val: deity.identity.loka, icon: "🌌" },
+            { label: "Sacred Colors", val: deity.identity.sacredColors.join(", "), icon: "🎨" },
+            { label: "Sacred Numbers", val: deity.identity.sacredNumbers.join(", "), icon: "🔢" },
+            { label: "Sacred Trees", val: deity.identity.sacredTrees.join(", "), icon: "🌳" },
+            { label: "Sacred Animals", val: deity.identity.sacredAnimals.join(", "), icon: "🦁" }
+          ].map((item, idx) => {
+            const isFlipped = activeIdentityCard === idx;
             return (
-              <button
-                key={mode}
-                onClick={() => { playClick(); setActiveMode(mode); }}
-                className={`flex items-center gap-1.5 px-4 py-3 text-xs uppercase tracking-wider font-extrabold transition-all border-b-2 cursor-pointer
-                  ${isActive 
-                    ? "border-[var(--accent-gold)] text-[var(--accent-gold)] font-black" 
-                    : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
+              <div
+                key={idx}
+                onClick={() => { playClick(); setActiveIdentityCard(isFlipped ? null : idx); }}
+                className="relative h-[160px] cursor-pointer group rounded-xl border border-[var(--border-gold)]/30 overflow-hidden"
+                style={{ perspective: "1000px" }}
               >
-                {icon}
-                <span>{label}</span>
-              </button>
+                {/* Golden card frame glow */}
+                <div className="absolute inset-0 border border-white/5 rounded-xl pointer-events-none group-hover:border-[var(--accent-gold)] transition-colors duration-500 z-20" />
+                
+                <motion.div
+                  className="w-full h-full relative"
+                  animate={{ rotateY: isFlipped ? 180 : 0 }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }}
+                  style={{ transformStyle: "preserve-3d" }}
+                >
+                  {/* FRONT SIDE */}
+                  <div 
+                    className={`absolute inset-0 p-5 flex flex-col justify-between items-center text-center rounded-xl bg-gradient-to-br
+                      ${isDarkMode 
+                        ? "from-[#0d0716] to-[#040108] shadow-2xl" 
+                        : "from-white to-[#F9F6F0] shadow-md"}`}
+                    style={{ backfaceVisibility: "hidden" }}
+                  >
+                    <div className="w-10 h-10 rounded-full bg-[var(--accent-gold)]/10 flex items-center justify-center text-xl">
+                      {item.icon}
+                    </div>
+                    <span className="text-xs uppercase tracking-widest text-[var(--text-secondary)] font-mono font-bold block">
+                      {item.label}
+                    </span>
+                    <span className="text-[10px] text-[var(--accent-gold)] font-mono flex items-center gap-1 opacity-70 group-hover:opacity-100">
+                      Tap to reveal &rarr;
+                    </span>
+                  </div>
+
+                  {/* BACK SIDE */}
+                  <div 
+                    className={`absolute inset-0 p-4 flex flex-col justify-center items-center text-center rounded-xl border-2 border-[var(--accent-gold)]/40 bg-gradient-to-br
+                      ${isDarkMode 
+                        ? "from-[#140b21] to-[#08020e]" 
+                        : "from-[#FBF8F3] to-[#F1E8D9]"}`}
+                    style={{
+                      backfaceVisibility: "hidden",
+                      transform: "rotateY(180deg)"
+                    }}
+                  >
+                    <span className="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-mono font-extrabold mb-1">
+                      {item.label}
+                    </span>
+                    <p className="text-xs text-[var(--text-primary)] leading-normal font-sans font-medium px-1">
+                      {item.val}
+                    </p>
+                  </div>
+                </motion.div>
+              </div>
             );
           })}
         </div>
       </section>
 
-      {/* ────────────────────────────────────────────────────────
-          DYNAMIC ALTARE DETAILS (BELOW HERO)
-          ──────────────────────────────────────────────────────── */}
-      <section className="flex-grow max-w-4xl mx-auto px-4 w-full pb-16 z-20 relative select-text">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeMode}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.4 }}
-            className={`p-6 md:p-8 rounded-xl border border-[var(--border-gold)]/25 shadow-sm min-h-[350px]
-              ${isDarkMode 
-                ? "bg-gradient-to-br from-[#0c0615] via-[#050209] to-[#0d0716]" 
-                : "bg-gradient-to-br from-[#FAF7F2] via-[#FDFDFB] to-[#FAF7F2]"}`}
-          >
-            {/* STORY MODE: Pinterest-style Editorial Columns */}
-            {activeMode === "story" && (
-              <div className="columns-1 md:columns-2 gap-6 space-y-6 [column-fill:_auto] w-full">
-                
-                {/* Card 1: Origin & Ascent */}
-                <div className="break-inside-avoid p-5 rounded-lg border border-[var(--border-gold)]/15 bg-white/5 dark:bg-black/10 shadow-sm flex flex-col gap-3">
-                  <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold">
-                    ✨ {t.originStory}
-                  </span>
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-serif italic select-text relative pl-4 border-l-2 border-[var(--accent-gold)]/40">
-                    &ldquo;{deity.originStory}&rdquo;
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          SECTION 3: LIFE JOURNEY TIMELINE (Story Mode Scroll)
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <div className="w-full relative py-4 bg-[var(--bg-secondary)] overflow-hidden">
+        <TornPaperDivider position="top" color={isDarkMode ? "#030107" : "#FAF7F2"} />
+
+        <section className="relative w-full py-16 px-4 md:px-8 max-w-4xl mx-auto z-20">
+          <div className="text-center mb-12 flex flex-col items-center">
+            <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold block mb-1">
+              Mitological Chronology
+            </span>
+            <h2 className="font-serif text-2xl md:text-3xl font-extrabold text-[var(--text-primary)]">
+              Life Journey Timeline
+            </h2>
+            <div className="h-[2px] w-20 bg-[var(--accent-gold)] mt-2" />
+            <p className="text-xs text-[var(--text-secondary)] max-w-md mt-2">
+              Embark upon the path of their divine incarnation. Scroll to explore the chapters of their sacred legends.
+            </p>
+          </div>
+
+          {/* Timeline Scroll Display */}
+          <div className="grid grid-cols-1 md:grid-cols-[28%_72%] gap-6 items-stretch">
+            {/* Left Timeline Guide index */}
+            <div className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible pb-4 md:pb-0 border-b md:border-b-0 md:border-r border-[var(--border-gold)]/20 pr-0 md:pr-4">
+              {deity.timeline.map((stage, idx) => {
+                const isActive = activeTimelineStage === idx;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => { playClick(); setActiveTimelineStage(idx); }}
+                    className={`flex items-center gap-3 px-3 py-2 text-[10px] md:text-xs text-left uppercase tracking-wider font-extrabold transition-all border rounded md:border-0 shrink-0 cursor-pointer
+                      ${isActive 
+                        ? "bg-[var(--accent-gold)] text-black md:bg-transparent md:text-[var(--accent-gold)] md:font-black" 
+                        : "bg-transparent text-[var(--text-secondary)] border-[var(--border-gold)]/20 hover:text-[var(--text-primary)]"}`}
+                  >
+                    <span className="font-mono text-[9px] md:text-[10px] w-5 h-5 rounded-full border border-current flex items-center justify-center shrink-0">
+                      0{idx + 1}
+                    </span>
+                    <span>{stage.stage}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Right Active Chapter Presentation */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTimelineStage}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.4 }}
+                className={`flex flex-col gap-6 p-6 md:p-8 rounded-xl border border-[var(--border-gold)]/25
+                  ${isDarkMode 
+                    ? "bg-[#0b0514] shadow-2xl" 
+                    : "bg-white shadow-md"}`}
+              >
+                <div>
+                  <div className="flex justify-between items-center border-b border-[var(--border-gold)]/20 pb-2 mb-4">
+                    <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold">
+                      Chapter 0{activeTimelineStage + 1}: {deity.timeline[activeTimelineStage].stage}
+                    </span>
+                    <span className="text-[9px] uppercase tracking-wider text-[var(--text-secondary)]">
+                      Lila Record
+                    </span>
+                  </div>
+                  <h3 className="font-serif text-xl font-extrabold text-[var(--text-primary)] mb-3">
+                    {deity.timeline[activeTimelineStage].title}
+                  </h3>
+                  <p className="text-sm text-[var(--text-primary)] font-medium leading-relaxed mb-4">
+                    {deity.timeline[activeTimelineStage].description}
                   </p>
                 </div>
 
-                {/* Card 2: Sacred Legends / Episodes */}
-                <div className="break-inside-avoid p-5 rounded-lg border border-[var(--border-gold)]/15 bg-white/5 dark:bg-black/10 shadow-sm flex flex-col gap-4">
-                  <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold">
-                    📖 {t.episodes}
+                {deity.timeline[activeTimelineStage].sanskritQuote && (
+                  <div className="p-4 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-gold)]/20 text-center flex flex-col gap-2">
+                    <p className="font-sanskrit text-base md:text-lg text-[var(--text-sanskrit)] dark:text-[var(--accent-gold)] font-bold whitespace-pre-line leading-relaxed">
+                      {deity.timeline[activeTimelineStage].sanskritQuote}
+                    </p>
+                    {deity.timeline[activeTimelineStage].quoteTranslation && (
+                      <p className="text-xs text-[var(--text-secondary)] italic leading-normal">
+                        &ldquo;{deity.timeline[activeTimelineStage].quoteTranslation}&rdquo;
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <div className="border-t border-[var(--border-gold)]/20 pt-4">
+                  <span className="text-[10px] text-[var(--accent-saffron)] uppercase font-mono font-bold tracking-widest block mb-1">
+                    📜 Sacred Narrative
                   </span>
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-sans select-text">
+                    {deity.timeline[activeTimelineStage].storyDetails}
+                  </p>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </section>
+
+        <TornPaperDivider position="bottom" color={isDarkMode ? "#030107" : "#FAF7F2"} />
+      </div>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          SECTION 4: RARE IMAGE GALLERY (Museum Catalog)
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative w-full py-16 px-4 md:px-8 max-w-7xl mx-auto z-10">
+        <div className="text-center mb-12 flex flex-col items-center">
+          <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold block mb-1">
+            Ancient Exhibition
+          </span>
+          <h2 className="font-serif text-2xl md:text-3xl font-extrabold text-[var(--text-primary)]">
+            Rare Museum Image Gallery
+          </h2>
+          <div className="h-[2px] w-20 bg-[var(--accent-gold)] mt-2" />
+          <p className="text-xs text-[var(--text-secondary)] max-w-md mt-2">
+            Behold ancient sculptures, manuscripts, and regional paintings cataloged across centuries.
+          </p>
+        </div>
+
+        {/* Gallery Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {deity.gallery.map((item, idx) => (
+            <div
+              key={idx}
+              onClick={() => { playClick(); setSelectedGalleryItem(item); }}
+              className={`flex flex-col justify-between p-5 rounded-xl border border-[var(--border-gold)]/30 cursor-pointer group transition-all hover:scale-[1.02]
+                ${isDarkMode 
+                  ? "bg-gradient-to-br from-[#0c0615] via-[#050209] to-[#0d0716] shadow-2xl" 
+                  : "bg-white shadow-md"}`}
+            >
+              {/* Premium fallback drawing representation */}
+              <div className="relative w-full h-44 rounded-lg overflow-hidden bg-black/30 flex items-center justify-center border border-[var(--border-gold)]/25 mb-4 group-hover:border-[var(--accent-gold)] transition-colors">
+                <SacredImage 
+                  src="" 
+                  alt={item.title} 
+                  className="w-full h-full object-cover" 
+                  fallbackText={deity.nameSanskrit}
+                  type="deity"
+                />
+                {/* Hover overlay zoom */}
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300">
+                  <Maximize2 className="w-6 h-6 text-[#FFD700] scale-90 group-hover:scale-100 transition-transform" />
+                </div>
+              </div>
+
+              <div>
+                <span className="text-[8px] bg-[var(--accent-gold)]/10 px-2 py-0.5 rounded text-[var(--accent-gold)] font-mono font-bold border border-[var(--border-gold)]/30 uppercase tracking-widest block w-fit mb-1.5">
+                  {item.type}
+                </span>
+                <h4 className="font-serif text-sm font-extrabold text-[var(--text-primary)] group-hover:text-[var(--accent-gold)] transition-colors">
+                  {item.title}
+                </h4>
+                <p className="text-[10px] text-[var(--text-secondary)] font-mono block mt-1">
+                  Origin: {item.origin}
+                </p>
+                <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed mt-2.5 line-clamp-3">
+                  {item.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Modal Light-box */}
+        <AnimatePresence>
+          {selectedGalleryItem && (
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+              {/* Backdrop */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedGalleryItem(null)}
+                className="absolute inset-0 bg-black/90 backdrop-blur-md"
+              />
+
+              {/* Content Panel */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className={`relative w-full max-w-2xl rounded-2xl border border-[var(--border-gold)] p-6 z-10 max-h-[90vh] overflow-y-auto
+                  ${isDarkMode 
+                    ? "bg-[#0b0514] text-white" 
+                    : "bg-white text-[var(--text-primary)]"}`}
+              >
+                <button 
+                  onClick={() => setSelectedGalleryItem(null)}
+                  className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-white/10 text-[var(--text-secondary)] hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+
+                <div className="flex flex-col gap-5 text-center items-center mt-4 select-text">
+                  <div className="w-48 h-48 rounded-full bg-black/30 border-2 border-[var(--accent-gold)] flex items-center justify-center p-2">
+                    <SacredImage 
+                      src="" 
+                      alt={selectedGalleryItem.title} 
+                      className="w-full h-full object-cover rounded-full" 
+                      fallbackText={deity.nameSanskrit}
+                      type="deity"
+                    />
+                  </div>
                   
-                  {/* Episode tabs */}
-                  <div className="flex flex-wrap gap-1.5 mb-1">
-                    {deity.majorEpisodes.map((ep, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => { playClick(); setSelectedEpisodeIdx(idx); }}
-                        className={`px-2 py-1 text-[10px] font-semibold border rounded transition-all cursor-pointer ${
-                          selectedEpisodeIdx === idx 
-                            ? "bg-[var(--border-gold)]/25 border-[var(--accent-gold)] text-[var(--accent-gold)] font-bold" 
-                            : "bg-transparent border-[var(--border-gold)]/20 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                        }`}
-                      >
-                        {ep.title}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Active Episode Content */}
-                  {deity.majorEpisodes[selectedEpisodeIdx] && (
-                    <motion.div 
-                      key={selectedEpisodeIdx}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="flex flex-col gap-3 bg-[var(--bg-secondary)] p-4 rounded border border-[var(--border-gold)]/15"
-                    >
-                      <h5 className="font-serif text-sm font-bold text-[var(--text-primary)] border-b border-[var(--border-gold)]/10 pb-1.5 flex justify-between items-center gap-2">
-                        <span>{deity.majorEpisodes[selectedEpisodeIdx].title}</span>
-                        {deity.majorEpisodes[selectedEpisodeIdx].scripture && (
-                          <span className="text-[8px] bg-[var(--bg-primary)] px-1.5 py-0.5 rounded text-[var(--accent-gold)] font-mono font-bold border border-[var(--border-gold)]/20 uppercase whitespace-nowrap">
-                            {deity.majorEpisodes[selectedEpisodeIdx].scripture}
-                          </span>
-                        )}
-                      </h5>
-
-                      <p className="text-xs text-[var(--text-secondary)] leading-relaxed select-text font-sans">
-                        {deity.majorEpisodes[selectedEpisodeIdx].narrative}
-                      </p>
-
-                      {deity.majorEpisodes[selectedEpisodeIdx].moralText && (
-                        <div className="border-t border-[var(--border-gold)]/10 pt-2 flex flex-col gap-1">
-                          <span className="text-[9px] text-[var(--accent-saffron)] uppercase font-mono font-bold tracking-wider">
-                            💡 {t.moral}
-                          </span>
-                          <p className="text-xs text-[var(--text-primary)] font-medium italic">
-                            &ldquo;{deity.majorEpisodes[selectedEpisodeIdx].moralText}&rdquo;
-                          </p>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </div>
-
-                {/* Card 3: Eternal Teachings */}
-                <div className="break-inside-avoid p-5 rounded-lg border border-[var(--border-gold)]/15 bg-white/5 dark:bg-black/10 shadow-sm flex flex-col gap-3">
-                  <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold">
-                    🕉️ {t.teachings}
-                  </span>
-                  <ul className="flex flex-col gap-3 list-none pl-0 text-xs text-[var(--text-secondary)]">
-                    {deity.teachings.map((teach, idx) => (
-                      <li key={idx} className="flex gap-2.5 items-start bg-[var(--bg-secondary)]/30 border border-[var(--border-gold)]/10 p-2.5 rounded hover:border-[var(--accent-gold)]/30 transition-colors">
-                        <span className="text-[var(--accent-gold)] font-mono font-bold shrink-0">0{idx + 1}.</span>
-                        <p className="select-text leading-relaxed font-sans">{teach}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
-
-            {/* SCHOLAR MODE: Pinterest-style Editorial Columns */}
-            {activeMode === "scholar" && (
-              <div className="columns-1 md:columns-2 gap-6 space-y-6 [column-fill:_auto] w-full">
-                
-                {/* Card 1: Scriptural Authority Intro */}
-                <div className="break-inside-avoid p-5 rounded-lg border border-[var(--border-gold)]/15 bg-white/5 dark:bg-black/10 shadow-sm flex flex-col gap-2">
-                  <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold">
-                    🏛️ Scriptural Authority
-                  </span>
-                  <h4 className="font-serif text-sm font-bold text-[var(--text-primary)]">
-                    Vedic and Puranic Canon
-                  </h4>
-                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-sans">
-                    The divine presence and dynamic nature of {deity.nameEnglish} are detailed across canonical texts, established through sacred mantras, hymns, and pilgrimages that form the core of Vedic cosmology.
-                  </p>
-                </div>
-
-                {/* Card 2: Associated Scriptures & Pilgrimages */}
-                <div className="break-inside-avoid p-5 rounded-lg border border-[var(--border-gold)]/15 bg-white/5 dark:bg-black/10 shadow-sm flex flex-col gap-4">
-                  {/* Connected Scriptures */}
-                  <div className="flex flex-col gap-2">
-                    <span className="text-[10px] text-[var(--accent-gold)] uppercase font-mono font-bold tracking-widest">
-                      📖 {t.scriptures}
-                    </span>
-                    <div className="flex flex-wrap gap-1.5 mt-1">
-                      {deity.scriptures.map((scrip, idx) => (
-                        <span key={idx} className="px-2 py-0.5 bg-[var(--bg-secondary)] border border-[var(--border-gold)]/20 text-[var(--text-primary)] text-[9px] font-bold uppercase tracking-wider rounded">
-                          {scrip}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Pilgrimages and temples */}
-                  <div className="flex flex-col gap-2 border-t border-[var(--border-gold)]/10 pt-3">
-                    <span className="text-[10px] text-[var(--accent-gold)] uppercase font-mono font-bold tracking-widest">
-                      🛕 {t.temples}
-                    </span>
-                    <ul className="list-disc pl-4 text-xs text-[var(--text-secondary)] flex flex-col gap-1.5 font-sans">
-                      {deity.temples.map((temple, idx) => (
-                        <li key={idx} className="select-text">{temple}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                {/* Card 3: Meditation Essence */}
-                <div className="break-inside-avoid p-5 rounded-lg border border-[var(--border-gold)]/15 bg-white/5 dark:bg-black/10 shadow-sm flex flex-col gap-2">
-                  <span className="text-[10px] text-[var(--accent-gold)] uppercase font-mono font-bold tracking-widest">
-                    🧘 {t.meditation}
-                  </span>
-                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed select-text font-serif italic">
-                    {deity.meditationMeaning}
-                  </p>
-                </div>
-
-                {/* Card 4/5...: Mantras */}
-                {deity.mantras.map((mantra, idx) => (
-                  <div key={idx} className="break-inside-avoid bg-white/5 dark:bg-black/15 border border-[var(--border-gold)]/25 p-5 rounded-lg flex flex-col gap-3 text-center shadow-sm">
-                    <span className="text-[9px] uppercase tracking-wider text-[var(--text-secondary)] font-mono block text-left">
-                      Mantra {idx + 1}
-                    </span>
-                    <p className="font-sanskrit text-lg text-[var(--text-sanskrit)] dark:text-[var(--accent-gold)] font-bold leading-normal whitespace-pre-line drop-shadow-sm select-text">
-                      {mantra.text}
-                    </p>
-                    <p className="text-[11px] text-[var(--text-secondary)] italic select-text">
-                      {mantra.translation}
-                    </p>
-                    <div className="border-t border-[var(--border-gold)]/15 pt-2.5 text-left">
-                      <span className="text-[9px] text-[var(--accent-gold)] uppercase font-mono font-bold block mb-1">
-                        Meaning
-                      </span>
-                      <p className="text-xs text-[var(--text-secondary)] leading-relaxed select-text font-sans">
-                        &ldquo;{mantra.meaning}&rdquo;
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* VISUAL MODE: Infographics, timelines, maps */}
-            {activeMode === "visual" && (
-              <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-1 border-b border-[var(--border-gold)]/20 pb-3">
-                  <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold">
-                    Visual Synthesis
-                  </span>
-                  <h4 className="font-serif text-lg font-bold text-[var(--text-primary)]">
-                    Lineage Maps and Timeline
-                  </h4>
-                </div>
-
-                {/* SVG Family Map */}
-                <div className="flex flex-col gap-2.5">
-                  <span className="text-[10px] text-[var(--accent-gold)] uppercase font-mono font-bold tracking-widest">
-                    {t.familyTree}
-                  </span>
-                  {renderFamilyTreeSVG()}
-                </div>
-
-                {/* Timeline map */}
-                <div className="flex flex-col gap-2.5 border-t border-[var(--border-gold)]/25 pt-5 mt-2">
-                  <span className="text-[10px] text-[var(--accent-gold)] uppercase font-mono font-bold tracking-widest">
-                    Sacred Geography Epochs
-                  </span>
-                  {renderTimelineSVG()}
-                </div>
-
-                {/* Festivals and Celebrations */}
-                <div className="bg-[var(--bg-secondary)] border border-[var(--border-gold)]/30 rounded-xl p-4 flex flex-col gap-2.5">
-                  <span className="text-[10px] text-[var(--text-secondary)] uppercase font-mono tracking-widest block font-bold border-b border-[var(--border-gold)]/20 pb-1.5 mb-1">
-                    {t.festivals}
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {deity.festivals.map((fest) => (
-                      <span 
-                        key={fest} 
-                        className="px-2.5 py-1 bg-[var(--bg-primary)] border border-[var(--border-gold)]/30 text-[var(--accent-saffron)] font-bold text-[11px] rounded-full shadow-sm"
-                      >
-                        🎉 {fest}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* KIDS MODE: Simple, fun, interactive */}
-            {activeMode === "kids" && (
-              <div className="flex flex-col gap-6">
-                {/* Simplified Summary Card */}
-                <div className="flex flex-col gap-3 bg-amber-500/10 border border-amber-500/30 p-5 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">🌟</span>
-                    <h4 className="font-serif text-base font-bold text-[var(--text-primary)]">
-                      Meet {deity.nameEnglish}!
-                    </h4>
-                  </div>
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed select-text font-sans">
-                    {deity.kidsSimplified.summary}
-                  </p>
-                </div>
-
-                {/* Fun Facts Slider */}
-                <div className="flex flex-col gap-3">
-                  <span className="text-[10px] text-[var(--accent-gold)] uppercase font-mono font-bold tracking-widest">
-                    🎈 {t.funFacts}
-                  </span>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {deity.kidsSimplified.funFacts.map((fact, idx) => (
-                      <div key={idx} className="bg-white/5 dark:bg-black/10 border border-[var(--border-gold)]/20 p-4 rounded-lg flex flex-col gap-2">
-                        <div className="w-6 h-6 rounded-full bg-[var(--accent-gold)]/20 flex items-center justify-center text-[10px] font-bold text-[var(--accent-gold)]">
-                          {idx + 1}
-                        </div>
-                        <p className="text-xs text-[var(--text-secondary)] leading-relaxed select-text font-sans">
-                          {fact}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Mount / Animal Companion Card */}
-                <div className="bg-[var(--bg-secondary)] border border-[var(--border-gold)]/25 p-4 rounded-lg flex items-center gap-4 flex-col sm:flex-row select-text">
-                  <div className="w-14 h-14 rounded-full bg-[var(--accent-gold)]/20 flex items-center justify-center text-3xl">
-                    🐾
-                  </div>
                   <div>
-                    <span className="text-[9px] uppercase tracking-wider text-[var(--text-secondary)] font-mono font-bold block">
-                      Mount / Vehicle
+                    <span className="text-[10px] bg-[var(--accent-gold)]/20 px-3 py-1 rounded-full text-[var(--accent-gold)] font-mono font-bold uppercase tracking-widest">
+                      {selectedGalleryItem.type}
                     </span>
-                    <h5 className="font-bold text-sm text-[var(--text-primary)] mt-0.5">{deity.vehicle}</h5>
-                    <p className="text-xs text-[var(--text-secondary)] leading-relaxed mt-1">
-                      {deity.nameEnglish} loves to travel on the back of {deity.vehicle}, showing the special connection between the divine and nature.
-                    </p>
+                    <h3 className="font-serif text-xl font-extrabold mt-3">
+                      {selectedGalleryItem.title}
+                    </h3>
+                    <span className="text-[11px] text-[var(--accent-saffron)] font-mono font-bold block mt-1.5">
+                      🏛️ {selectedGalleryItem.origin}
+                    </span>
                   </div>
-                </div>
 
-                {/* Moral Box */}
-                <div className="border-t border-[var(--border-gold)]/20 pt-4 flex flex-col gap-2 bg-gradient-to-r from-orange-500/5 to-transparent p-4 rounded-lg border-l-4 border-l-[var(--accent-saffron)]">
-                  <span className="text-[10px] text-[var(--accent-saffron)] uppercase font-mono font-bold tracking-widest">
-                    💡 Moral Lesson
+                  <p className="text-xs md:text-sm text-[var(--text-secondary)] leading-relaxed max-w-xl font-sans mt-1">
+                    {selectedGalleryItem.description}
+                  </p>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          SECTION 5: SACRED GEOGRAPHY (Pilgrimage Atlas)
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative w-full py-16 px-4 md:px-8 max-w-7xl mx-auto z-10 border-t border-[var(--border-gold)]/15">
+        <div className="text-center mb-12 flex flex-col items-center">
+          <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold block mb-1">
+            Pilgrimage Atlas
+          </span>
+          <h2 className="font-serif text-2xl md:text-3xl font-extrabold text-[var(--text-primary)]">
+            Sacred Geography & Temples
+          </h2>
+          <div className="h-[2px] w-20 bg-[var(--accent-gold)] mt-2" />
+          <p className="text-xs text-[var(--text-secondary)] max-w-md mt-2">
+            Journey to the major geographic spots and historic temples dedicated to their memory.
+          </p>
+        </div>
+
+        {/* Geography Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {deity.geography.map((place, idx) => (
+            <div
+              key={idx}
+              className={`flex flex-col justify-between p-6 rounded-xl border border-[var(--border-gold)]/30 backdrop-blur-md
+                ${isDarkMode 
+                  ? "bg-white/5 shadow-2xl" 
+                  : "bg-white shadow-md"}`}
+            >
+              <div>
+                <div className="flex justify-between items-start border-b border-[var(--border-gold)]/10 pb-2 mb-4">
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-[var(--accent-saffron)]" />
+                    <h3 className="font-serif text-base font-extrabold text-[var(--text-primary)]">
+                      {place.templeName}
+                    </h3>
+                  </div>
+                  <span className="text-[9px] text-[var(--text-secondary)] uppercase font-mono font-bold">
+                    {place.coordinates}
                   </span>
-                  <p className="text-sm font-semibold text-[var(--text-primary)] select-text italic">
-                    &ldquo;{deity.kidsSimplified.moralLesson}&rdquo;
+                </div>
+                
+                <span className="text-[9px] text-[var(--accent-gold)] uppercase font-mono font-bold tracking-widest block mb-1">
+                  Region: {place.region}
+                </span>
+                
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed select-text font-sans">
+                  {place.significance}
+                </p>
+                
+                <div className="border-t border-[var(--border-gold)]/10 pt-3 mt-4">
+                  <span className="text-[9px] text-[var(--accent-saffron)] uppercase font-mono font-bold tracking-widest block mb-1">
+                    ⛰️ Yatra / Pilgrimage route
+                  </span>
+                  <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed font-sans italic">
+                    {place.routeDescription}
                   </p>
                 </div>
               </div>
+
+              <div className="mt-6 flex justify-end">
+                <a
+                  href={place.mapsLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-1.5 rounded-full bg-gradient-to-r from-[#D4A017] to-[#B8860B] text-black font-extrabold text-[10px] uppercase tracking-wider shadow hover:shadow-lg transition-all"
+                >
+                  Visit Sacred Altar &rarr;
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          SECTION 6: SCRIPTURE CONNECTIONS (Interactive Node Network)
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative w-full py-16 px-4 md:px-8 max-w-5xl mx-auto z-10 border-t border-[var(--border-gold)]/15">
+        <div className="text-center mb-12 flex flex-col items-center">
+          <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold block mb-1">
+            Textual Authority
+          </span>
+          <h2 className="font-serif text-2xl md:text-3xl font-extrabold text-[var(--text-primary)]">
+            Scriptural Network Connections
+          </h2>
+          <div className="h-[2px] w-20 bg-[var(--accent-gold)] mt-2" />
+          <p className="text-xs text-[var(--text-secondary)] max-w-md mt-2">
+            Click on any scripture category to trace how their dynamic legends are woven through Vedic and Puranic literature.
+          </p>
+        </div>
+
+        {/* Network Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-[45%_55%] gap-8 items-center bg-white/5 dark:bg-black/20 p-6 md:p-8 rounded-2xl border border-[var(--border-gold)]/25">
+          
+          {/* Interactive SVG Node Diagram */}
+          <div className="w-full flex justify-center py-4">
+            <svg className="w-full max-w-[340px] h-[300px] text-[var(--accent-gold)]" viewBox="0 0 300 300" fill="none">
+              <rect width="100%" height="100%" rx="15" fill="none" />
+              
+              {/* Radial connecting tracks */}
+              <circle cx="150" cy="150" r="100" stroke="rgba(212, 160, 23, 0.15)" strokeWidth="1" strokeDasharray="3 3" />
+              <circle cx="150" cy="150" r="50" stroke="rgba(212, 160, 23, 0.1)" strokeWidth="0.5" />
+
+              {/* Connecting lines from active node */}
+              {deity.scriptures.map((item, idx) => {
+                const angle = (idx * 2 * Math.PI) / deity.scriptures.length;
+                const targetX = 150 + Math.cos(angle) * 100;
+                const targetY = 150 + Math.sin(angle) * 100;
+                const isActive = activeScriptureNode === item.category;
+
+                return (
+                  <line
+                    key={idx}
+                    x1="150"
+                    y1="150"
+                    x2={targetX}
+                    y2={targetY}
+                    stroke={isActive ? "var(--accent-gold)" : "rgba(212, 160, 23, 0.2)"}
+                    strokeWidth={isActive ? "1.5" : "0.5"}
+                    strokeDasharray={isActive ? "none" : "3 3"}
+                  />
+                );
+              })}
+
+              {/* Central Deity Core Node */}
+              <g transform="translate(125, 125)">
+                <circle cx="25" cy="25" r="25" fill="rgba(212, 160, 23, 0.12)" stroke="var(--accent-gold)" strokeWidth="1.5" />
+                <circle cx="25" cy="25" r="28" stroke="var(--accent-gold)" strokeWidth="0.5" className="animate-pulse opacity-40" />
+                <text x="25" y="29" textAnchor="middle" fill="var(--text-primary)" fontSize="8.5" fontWeight="bold" fontFamily="var(--font-sanskrit)">
+                  {deity.nameSanskrit}
+                </text>
+              </g>
+
+              {/* Outer Scripture Category Nodes */}
+              {deity.scriptures.map((item, idx) => {
+                const angle = (idx * 2 * Math.PI) / deity.scriptures.length;
+                const targetX = 150 + Math.cos(angle) * 100;
+                const targetY = 150 + Math.sin(angle) * 100;
+                const isActive = activeScriptureNode === item.category;
+
+                return (
+                  <g
+                    key={idx}
+                    transform={`translate(${targetX - 22}, ${targetY - 22})`}
+                    onClick={() => { playClick(); setActiveScriptureNode(item.category); }}
+                    className="cursor-pointer"
+                  >
+                    <circle 
+                      cx="22" 
+                      cy="22" 
+                      r="20" 
+                      fill={isActive ? "var(--accent-gold)" : isDarkMode ? "#090410" : "#F8F5EF"} 
+                      stroke={isActive ? "#FFD700" : "rgba(212, 160, 23, 0.35)"} 
+                      strokeWidth={isActive ? "1.5" : "1"}
+                    />
+                    <text 
+                      x="22" 
+                      y="25" 
+                      textAnchor="middle" 
+                      fill={isActive ? "black" : "var(--text-primary)"} 
+                      fontSize="7" 
+                      fontWeight="bold"
+                    >
+                      {item.category.slice(0, 6)}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+
+          {/* Scripture Detail Description panel */}
+          <div className="flex flex-col gap-4">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeScriptureNode}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col gap-3"
+              >
+                <div className="flex items-center justify-between border-b border-[var(--border-gold)]/20 pb-2">
+                  <span className="text-[10px] bg-[var(--accent-gold)]/25 px-2.5 py-0.5 rounded text-[var(--accent-gold)] font-mono font-bold uppercase tracking-widest">
+                    {activeScripture.category}
+                  </span>
+                  <span className="text-xs font-serif font-extrabold text-[var(--text-primary)]">
+                    {activeScripture.title}
+                  </span>
+                </div>
+
+                <div className="bg-[var(--bg-primary)] p-4 rounded-lg border border-[var(--border-gold)]/20 text-center italic select-text flex flex-col gap-1.5">
+                  <p className="font-sanskrit text-sm md:text-base text-[var(--text-sanskrit)] dark:text-[var(--accent-gold)] font-bold whitespace-pre-line leading-relaxed">
+                    {activeScripture.quote}
+                  </p>
+                  <p className="text-[11px] text-[var(--text-secondary)] leading-normal">
+                    &ldquo;{activeScripture.quoteTranslation}&rdquo;
+                  </p>
+                </div>
+
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-sans mt-1">
+                  <span className="text-[10px] text-[var(--accent-saffron)] uppercase font-mono font-bold block mb-0.5">
+                    Cosmic Connection
+                  </span>
+                  {activeScripture.connection}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          SECTION 7: FESTIVALS (Lunar Calendar & Regional Rites)
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative w-full py-16 px-4 md:px-8 max-w-4xl mx-auto z-10 border-t border-[var(--border-gold)]/15">
+        <div className="text-center mb-12 flex flex-col items-center">
+          <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold block mb-1">
+            Sacred Calendar
+          </span>
+          <h2 className="font-serif text-2xl md:text-3xl font-extrabold text-[var(--text-primary)]">
+            Major Festivals & Celebrations
+          </h2>
+          <div className="h-[2px] w-20 bg-[var(--accent-gold)] mt-2" />
+          <p className="text-xs text-[var(--text-secondary)] max-w-md mt-2">
+            Explore regional calendars, lunar cycles, and devotional customs linked to their worship.
+          </p>
+        </div>
+
+        {/* Festival items cards */}
+        <div className="flex flex-col gap-4">
+          {deity.festivals.map((fest, idx) => (
+            <div
+              key={idx}
+              className={`p-5 rounded-xl border border-[var(--border-gold)]/30 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center
+                ${isDarkMode ? "bg-white/5" : "bg-white"}`}
+            >
+              <div className="flex items-start gap-3 flex-grow">
+                <div className="w-10 h-10 rounded-full bg-[var(--accent-saffron)]/10 flex items-center justify-center text-xl shrink-0">
+                  🎉
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <h3 className="font-serif text-base font-extrabold text-[var(--text-primary)]">
+                      {fest.name}
+                    </h3>
+                    <span className="text-[9px] bg-[var(--accent-gold)]/20 px-2 py-0.5 rounded text-[var(--accent-gold)] font-mono font-bold uppercase tracking-wider">
+                      🌓 {fest.lunarDate}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-sans">
+                    {fest.description}
+                  </p>
+                </div>
+              </div>
+
+              {/* Regional variations box */}
+              <div className="w-full md:w-[30%] border-t md:border-t-0 md:border-l border-[var(--border-gold)]/20 pt-3 md:pt-0 pl-0 md:pl-4 flex flex-col gap-1">
+                <span className="text-[9px] text-[var(--accent-saffron)] uppercase font-mono font-bold tracking-widest block">
+                  Regional Customs
+                </span>
+                <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed font-sans italic">
+                  {fest.regionalVariations}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          SECTION 8: DIVINE RELATIONSHIPS (Lineage Tree Graph)
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative w-full py-16 px-4 md:px-8 max-w-4xl mx-auto z-10 border-t border-[var(--border-gold)]/15">
+        <div className="text-center mb-12 flex flex-col items-center">
+          <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold block mb-1">
+            Lineage Maps
+          </span>
+          <h2 className="font-serif text-2xl md:text-3xl font-extrabold text-[var(--text-primary)]">
+            Divine Relationships Graph
+          </h2>
+          <div className="h-[2px] w-20 bg-[var(--accent-gold)] mt-2" />
+          <p className="text-xs text-[var(--text-secondary)] max-w-md mt-2">
+            Toggle between Family, Incarnations (Avatars), and Guru lineages to explore their relational networks.
+          </p>
+        </div>
+
+        {/* Tree Selector Tabs */}
+        <div className="flex justify-center border-b border-[var(--border-gold)]/20 pb-0.5 mb-8 gap-2">
+          {([
+            { id: "family", label: "Family Tree" },
+            { id: "avatars", label: "Avatar Tree" },
+            { id: "gurus", label: "Guru / Lineage" }
+          ] as const).map((tab) => {
+            const isActive = relationshipView === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => { playClick(); setRelationshipView(tab.id); }}
+                className={`px-4 py-2.5 text-xs uppercase tracking-wider font-extrabold transition-all border-b-2 cursor-pointer
+                  ${isActive 
+                    ? "border-[var(--accent-gold)] text-[var(--accent-gold)] font-black" 
+                    : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* SVG Network Graph */}
+        <div className="w-full flex justify-center py-6 bg-white/5 dark:bg-black/20 rounded-2xl border border-[var(--border-gold)]/25 overflow-hidden">
+          <svg className="w-full max-w-[440px] h-[260px] text-[var(--accent-gold)]" viewBox="0 0 300 220" fill="none">
+            {/* Background grid */}
+            <pattern id="tree-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(212, 160, 23, 0.03)" strokeWidth="0.5" />
+            </pattern>
+            <rect width="100%" height="100%" fill="url(#tree-grid)" />
+
+            {/* Central Node */}
+            <g transform="translate(105, 88)" className="z-20">
+              <rect width="90" height="44" rx="6" fill="rgba(212, 160, 23, 0.15)" stroke="var(--accent-gold)" strokeWidth="2" />
+              <rect width="94" height="48" x="-2" y="-2" rx="8" stroke="var(--accent-gold)" strokeWidth="0.5" className="animate-pulse opacity-40" />
+              <text x="45" y="20" textAnchor="middle" fill="var(--text-primary)" fontSize="9.5" fontWeight="bold">
+                {deity.nameEnglish}
+              </text>
+              <text x="45" y="34" textAnchor="middle" fill="var(--accent-gold)" fontSize="9" fontFamily="var(--font-sanskrit)">
+                {deity.nameSanskrit}
+              </text>
+            </g>
+
+            {/* FAMILY VIEW */}
+            {relationshipView === "family" && (
+              <g>
+                {deity.relationships.family.map((rel, idx) => {
+                  const angle = (idx * 2 * Math.PI) / deity.relationships.family.length;
+                  const targetX = 150 + Math.cos(angle) * 95;
+                  const targetY = 110 + Math.sin(angle) * 75;
+
+                  return (
+                    <g key={idx}>
+                      <line x1="150" y1="110" x2={targetX} y2={targetY} stroke="rgba(212, 160, 23, 0.3)" strokeWidth="1.5" strokeDasharray="3 3" />
+                      <circle cx={targetX} cy={targetY} r="3" fill="var(--accent-gold)" />
+                      <g 
+                        transform={`translate(${targetX - 38}, ${targetY - 18})`}
+                        onClick={() => {
+                          if (rel.slug) {
+                            playNavigate();
+                            router.push(`/deities/${rel.slug}`);
+                          }
+                        }}
+                        className={rel.slug ? "cursor-pointer group" : "cursor-default"}
+                      >
+                        <rect 
+                          width="76" 
+                          height="36" 
+                          rx="4" 
+                          fill={isDarkMode ? "#090410" : "#FAF6EE"} 
+                          stroke={rel.slug ? "var(--border-gold)" : "rgba(120, 120, 120, 0.25)"} 
+                          strokeWidth="1" 
+                        />
+                        <text x="38" y="14" textAnchor="middle" fill="var(--text-primary)" fontSize="8" fontWeight="bold">
+                          {rel.name}
+                        </text>
+                        <text x="38" y="26" textAnchor="middle" fill="var(--text-secondary)" fontSize="7" className="uppercase font-mono">
+                          {rel.relation}
+                        </text>
+                      </g>
+                    </g>
+                  );
+                })}
+              </g>
             )}
-          </motion.div>
-        </AnimatePresence>
+
+            {/* AVATAR VIEW */}
+            {relationshipView === "avatars" && (
+              <g>
+                {deity.relationships.avatars.length === 0 ? (
+                  <text x="150" y="180" textAnchor="middle" fill="var(--text-secondary)" fontSize="10" fontStyle="italic">
+                    Formless Supreme: No material incarnations seed.
+                  </text>
+                ) : (
+                  deity.relationships.avatars.map((av, idx) => {
+                    const count = deity.relationships.avatars.length;
+                    const angle = Math.PI - (idx * Math.PI) / (count - 1 || 1); // Arc top layout
+                    const targetX = 150 + Math.cos(angle) * 105;
+                    const targetY = 110 + Math.sin(angle) * 80;
+
+                    return (
+                      <g key={idx}>
+                        <line x1="150" y1="110" x2={targetX} y2={targetY} stroke="rgba(212, 160, 23, 0.35)" strokeWidth="1" />
+                        <g 
+                          transform={`translate(${targetX - 38}, ${targetY - 16})`}
+                          onClick={() => {
+                            if (av.slug) {
+                              playNavigate();
+                              router.push(`/deities/${av.slug}`);
+                            }
+                          }}
+                          className={av.slug ? "cursor-pointer" : "cursor-default"}
+                        >
+                          <rect 
+                            width="76" 
+                            height="32" 
+                            rx="4" 
+                            fill={isDarkMode ? "#090410" : "#FAF6EE"} 
+                            stroke={av.slug ? "var(--accent-gold)" : "rgba(120, 120, 120, 0.2)"} 
+                            strokeWidth="1" 
+                          />
+                          <text x="38" y="14" textAnchor="middle" fill="var(--text-primary)" fontSize="7.5" fontWeight="bold">
+                            {av.name}
+                          </text>
+                          <text x="38" y="24" textAnchor="middle" fill="var(--text-secondary)" fontSize="6" className="uppercase block overflow-hidden max-w-full">
+                            Manifestation
+                          </text>
+                        </g>
+                      </g>
+                    );
+                  })
+                )}
+              </g>
+            )}
+
+            {/* GURU VIEW */}
+            {relationshipView === "gurus" && (
+              <g>
+                {deity.relationships.gurus.length === 0 ? (
+                  <text x="150" y="180" textAnchor="middle" fill="var(--text-secondary)" fontSize="10" fontStyle="italic">
+                    Adi Guru: Represents the primordial source of learning.
+                  </text>
+                ) : (
+                  deity.relationships.gurus.map((guru, idx) => {
+                    const count = deity.relationships.gurus.length;
+                    const angle = Math.PI + (idx * Math.PI) / (count - 1 || 1); // Arc bottom layout
+                    const targetX = 150 + Math.cos(angle) * 95;
+                    const targetY = 110 + Math.sin(angle) * 75;
+
+                    return (
+                      <g key={idx}>
+                        <line x1="150" y1="110" x2={targetX} y2={targetY} stroke="rgba(212, 160, 23, 0.35)" strokeWidth="1" />
+                        <g transform={`translate(${targetX - 40}, ${targetY - 18})`}>
+                          <rect width="80" height="36" rx="4" fill={isDarkMode ? "#090410" : "#FAF6EE"} stroke="rgba(120, 120, 120, 0.2)" strokeWidth="1" />
+                          <text x="40" y="14" textAnchor="middle" fill="var(--text-primary)" fontSize="7.5" fontWeight="bold">
+                            {guru.name}
+                          </text>
+                          <text x="40" y="26" textAnchor="middle" fill="var(--text-secondary)" fontSize="6.5" className="block max-w-full font-serif text-[6px]">
+                            {guru.role.slice(0, 18)}...
+                          </text>
+                        </g>
+                      </g>
+                    );
+                  })
+                )}
+              </g>
+            )}
+          </svg>
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          SECTION 9: MANTRAS & STOTRAS (Word-by-Word Chants)
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative w-full py-16 px-4 md:px-8 max-w-4xl mx-auto z-10 border-t border-[var(--border-gold)]/15">
+        <div className="text-center mb-12 flex flex-col items-center">
+          <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold block mb-1">
+            Chanting Sanctum
+          </span>
+          <h2 className="font-serif text-2xl md:text-3xl font-extrabold text-[var(--text-primary)]">
+            Sacred Mantras & Stotras
+          </h2>
+          <div className="h-[2px] w-20 bg-[var(--accent-gold)] mt-2" />
+          <p className="text-xs text-[var(--text-secondary)] max-w-md mt-2">
+            Recite the primordial hymns. Hover over words to inspect their literal and mystical Sanskrit definitions.
+          </p>
+        </div>
+
+        {/* Mantras List */}
+        <div className="flex flex-col gap-6">
+          {deity.mantras.map((mantra, mIdx) => (
+            <div
+              key={mIdx}
+              className={`p-6 md:p-8 rounded-xl border border-[var(--border-gold)]/25 flex flex-col gap-5
+                ${isDarkMode 
+                  ? "bg-gradient-to-br from-[#0c0615] via-[#050209] to-[#0d0716] shadow-2xl" 
+                  : "bg-white shadow-md"}`}
+            >
+              {/* Mantra Heading & Sound trigger */}
+              <div className="flex justify-between items-center border-b border-[var(--border-gold)]/15 pb-3">
+                <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold">
+                  Mantra 0{mIdx + 1}: Chanting Plate
+                </span>
+                <button
+                  onClick={triggerBellSound}
+                  className="px-3 py-1 rounded-full bg-[var(--accent-gold)]/10 text-[var(--accent-gold)] font-mono text-[9px] uppercase tracking-widest border border-[var(--border-gold)]/40 hover:bg-[var(--accent-gold)]/25 cursor-pointer flex items-center gap-1.5"
+                >
+                  🔔 <span>Ring Chime</span>
+                </button>
+              </div>
+
+              {/* Sanskrit Text with hover trigger words */}
+              <div className="text-center select-text py-4 flex flex-col gap-3">
+                <p className="font-sanskrit text-xl md:text-2xl text-[var(--text-sanskrit)] dark:text-[var(--accent-gold)] font-bold whitespace-pre-line leading-relaxed">
+                  {mantra.text}
+                </p>
+                <p className="text-xs md:text-sm text-[var(--text-secondary)] italic leading-normal px-4">
+                  {mantra.transliteration}
+                </p>
+              </div>
+
+              {/* Word-by-Word Translation breakdown */}
+              <div className="border-t border-[var(--border-gold)]/15 pt-4">
+                <span className="text-[9px] text-[var(--accent-gold)] uppercase font-mono font-bold tracking-widest block mb-3">
+                  🔍 Mystical Word-by-Word Breakdown
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {mantra.breakdown.map((item, wIdx) => {
+                    const isHovered = hoveredMantraWord === `${mIdx}-${wIdx}`;
+                    return (
+                      <div
+                        key={wIdx}
+                        onMouseEnter={() => setHoveredMantraWord(`${mIdx}-${wIdx}`)}
+                        onMouseLeave={() => setHoveredMantraWord(null)}
+                        className={`relative px-3 py-1.5 rounded border transition-all cursor-default select-text
+                          ${isHovered 
+                            ? "bg-[var(--accent-gold)] border-[#FFD700] text-black shadow-md font-bold" 
+                            : "bg-[var(--bg-secondary)]/50 border-[var(--border-gold)]/20 text-[var(--text-primary)]"}`}
+                      >
+                        <span className="text-xs md:text-sm font-serif block">
+                          {item.word}
+                        </span>
+                        
+                        {/* Word tooltip definition */}
+                        <AnimatePresence>
+                          {isHovered && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                              className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 rounded bg-black text-white text-[10px] font-sans border border-[var(--border-gold)] text-center leading-normal z-30 shadow-xl"
+                            >
+                              <span className="font-bold text-[#FFD700] block mb-0.5">{item.word}</span>
+                              {item.meaning}
+                              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black" />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Timeless Meaning */}
+              <div className="border-t border-[var(--border-gold)]/15 pt-4">
+                <span className="text-[9px] text-[var(--accent-saffron)] uppercase font-mono font-bold tracking-widest block mb-1">
+                  💡 Cosmic Essence Meaning
+                </span>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed select-text font-serif italic">
+                  &ldquo;{mantra.meaning}&rdquo;
+                </p>
+              </div>
+
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          SECTION 10: EXPLORE THE DIVINE WORLD (CTAs)
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative w-full py-16 px-4 md:px-8 max-w-4xl mx-auto z-10 border-t border-[var(--border-gold)]/15 select-none">
+        <div className="bg-gradient-to-br from-[#120a1c] via-[#020005] to-[#100619] rounded-2xl border border-[var(--border-gold)] p-8 text-center flex flex-col items-center gap-6 shadow-2xl relative overflow-hidden">
+          
+          {/* Subtle concentric circles in CTA */}
+          <div className="absolute inset-0 opacity-5 pointer-events-none flex items-center justify-center scale-150">
+            <svg className="w-5/6 h-5/6 text-[#D4A017] rotate-slow" viewBox="0 0 100 100" fill="currentColor">
+              <circle cx="50" cy="50" r="45" />
+            </svg>
+          </div>
+
+          <div className="z-10">
+            <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold block mb-1">
+              Gateway Matrix
+            </span>
+            <h2 className="font-serif text-xl md:text-2xl font-extrabold text-white">
+              Continue Your Devotional Journey
+            </h2>
+            <p className="text-xs text-slate-400 max-w-md mt-2 mx-auto leading-relaxed">
+              Ascend to the library to study their canonical scriptures, or map pilgrimage paths in the Interactive Sacred Atlas.
+            </p>
+          </div>
+
+          {/* Action CTAs */}
+          <div className="z-10 flex flex-col sm:flex-row gap-4 w-full justify-center">
+            <button
+              onClick={() => { playNavigate(); router.push("/library"); }}
+              className="px-6 py-2.5 rounded-lg border border-[var(--border-gold)] text-[var(--accent-gold)] hover:bg-[var(--border-gold)]/10 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
+            >
+              Browse Library Scriptures
+            </button>
+            <button
+              onClick={() => { playNavigate(); router.push("/temples"); }}
+              className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#D4A017] to-[#B8860B] text-black hover:shadow-[0_0_15px_rgba(212,160,23,0.3)] text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
+            >
+              Explore Sacred Temples Map
+            </button>
+          </div>
+        </div>
       </section>
 
       {/* Recommended Journey reading */}
       <NextReading items={getNextReadItems()} />
 
       {/* Discovery of Related scriptures/articles */}
-      <RelatedContentDiscovery 
+      <RelatedContentDiscovery
         category={
           (() => {
             const s = deity.slug.toLowerCase();
@@ -1327,7 +1368,7 @@ export default function DeityDetailView({ slug }: DeityDetailViewProps) {
             if (s === "hanuman") return "hanuman";
             return "general";
           })()
-        } 
+        }
       />
     </div>
   );
