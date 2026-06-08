@@ -1,0 +1,172 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. Hierarchical Scripture Engine Nodes
+model ScriptureCategory {
+  id           String      @id @default(uuid())
+  name         String
+  slug         String      @unique
+  description  String
+  icon         String
+  displayOrder Int
+  scriptures   Scripture[]
+}
+
+model Scripture {
+  id            String            @id @default(uuid())
+  categoryId    String
+  category      ScriptureCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  titleSanskrit String
+  titleHindi    String
+  titleEnglish  String
+  slug          String            @unique
+  description   String
+  totalChapters Int
+  totalVerses   Int
+  pdfUrl        String?
+  epubUrl       String?
+  coverImage    String?
+  authorRishi   String?
+  periodEra     String?
+  isPublished   Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  chapters      Chapter[]
+  verses        Verse[]
+  progress      ReadingProgress[]
+}
+
+model Chapter {
+  id            String    @id @default(uuid())
+  scriptureId   String
+  scripture     Scripture @relation(fields: [scriptureId], references: [id], onDelete: Cascade)
+  chapterNumber Int
+  titleSanskrit String
+  titleHindi    String
+  titleEnglish  String
+  summary       String
+  totalVerses   Int
+  verses        Verse[]
+
+  @@unique([scriptureId, chapterNumber])
+}
+
+model Verse {
+  id                  String     @id @default(uuid())
+  chapterId           String
+  chapter             Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  scriptureId         String
+  scripture           Scripture  @relation(fields: [scriptureId], references: [id], onDelete: Cascade)
+  verseNumber         String // Handles ranges like "1-2" or section offsets
+  textSanskrit        String
+  textTransliteration String
+  translationHindi    String
+  translationEnglish  String
+  wordMeanings        String // JSON array: [{word: string, iast: string, meaning_en: string, meaning_hi: string}]
+  commentaries        String // JSON array: [{author: string, text_en: string, text_hi: string}]
+  references          String // JSON array: [{source: string, verse: string, link: string}]
+  relatedConcepts     String // JSON array: string[] (concept tags)
+  audioUrl            String?
+  bookmarks           Bookmark[]
+
+  @@unique([chapterId, verseNumber])
+}
+
+// 2. Knowledge Graph Relational Mapping
+model GraphNode {
+  id          String   @id @default(uuid())
+  name        String
+  nameSanskrit String
+  type        String   // "DEITY" | "RISHI" | "PLACE" | "EVENT" | "BOOK" | "VERSE" | "CONCEPT"
+  slug        String   @unique
+  description String
+  metadata    String   // JSON string storing extra attributes (e.g. epithets, weapons, timing)
+  sources     GraphEdge[] @relation("sourceNode")
+  targets     GraphEdge[] @relation("targetNode")
+}
+
+model GraphEdge {
+  id           String    @id @default(uuid())
+  sourceId     String
+  sourceNode   GraphNode @relation("sourceNode", fields: [sourceId], references: [id], onDelete: Cascade)
+  targetId     String
+  targetNode   GraphNode @relation("targetNode", fields: [targetId], references: [id], onDelete: Cascade)
+  relationType String    // "DEPICTS" | "AUTHORED" | "LOCATED_AT" | "OCCURRED_IN" | "PART_OF" | "CONCEPTUALIZES" | "MENTIONS"
+  weight       Float     @default(1.0)
+
+  @@unique([sourceId, targetId, relationType])
+}
+
+// 3. Sacred Places (Temple Atlas Expansion)
+model SacredPlace {
+  id           String  @id @default(uuid())
+  name         String
+  nameSanskrit String
+  slug         String  @unique
+  type         String  // "JYOTIRLINGA" | "SHAKTI_PEETHA" | "CHAR_DHAM" | "PANCH_BHOOTA" | "HISTORICAL"
+  description  String
+  latitude     Float
+  longitude    Float
+  state        String
+  country      String
+  mainDeity    String
+  significance String
+  images       String  // JSON string array
+  historicalEra String?
+  architecture  String?
+}
+
+// 4. Ingested Sources Metadata
+model IngestedMeta {
+  id         String   @id @default(uuid())
+  portalName String   // "Vedic Heritage" | "SanskritDocuments" | "GitaSupersite" | "Sacred Texts"
+  sourceUrl  String
+  license    String
+  ingestedAt DateTime @default(now())
+  status     String   // "SUCCESS" | "PENDING" | "FAILED"
+}
+
+// 5. User accounts & progress
+model User {
+  id            String            @id @default(uuid())
+  email         String            @unique
+  passwordHash  String
+  displayName   String
+  preferredLang String            @default("EN")
+  createdAt     DateTime          @default(now())
+  bookmarks     Bookmark[]
+  progress      ReadingProgress[]
+}
+
+model Bookmark {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verseId   String
+  verse     Verse    @relation(fields: [verseId], references: [id], onDelete: Cascade)
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, verseId])
+}
+
+model ReadingProgress {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scriptureId String
+  scripture   Scripture @relation(fields: [scriptureId], references: [id], onDelete: Cascade)
+  lastChapter Int
+  lastVerse   Int
+  percentage  Float
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, scriptureId])
+}
