@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function HistoryPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#FAF7F0] text-[#3E2723]">
+    <div className="flex flex-col min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <Breadcrumb items={[{ label: "Sacred Timeline" }]} />
       
       {/* Dynamic client-side history timeline */}

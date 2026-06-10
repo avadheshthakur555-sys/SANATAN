@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, memo } from "react";
 import Link from "next/link";
 import { ChevronDown, Volume2, Share2, Copy, Check, BookOpen, Download } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { useSacredSound } from "@/lib/sacred-audio";
 import { useLanguageStore } from "@/store/useLanguageStore";
 
@@ -519,6 +519,9 @@ interface TreeNode {
   x: number;
   y: number;
   icon: string;
+  image: string;
+  quote?: string;
+  quoteTranslation?: string;
 }
 
 const TREE_NODES: TreeNode[] = [
@@ -530,7 +533,10 @@ const TREE_NODES: TreeNode[] = [
     description: "The eternal, universal path of righteousness, truth, and cosmic duty. It forms the ultimate root system of all Vedic and dharmic paths.",
     x: 400,
     y: 60,
-    icon: "🕉️"
+    icon: "🕉️",
+    image: "/images/origins-dharma.png",
+    quote: "सत्यं बृहदृतमुग्रं दीक्षा तपो ब्रह्म यज्ञः पृथिवीं धारयन्ति।",
+    quoteTranslation: "Truth, eternal order, dedication, austerity, knowledge, and sacrifice uphold the earth."
   },
   {
     id: "shruti",
@@ -540,7 +546,10 @@ const TREE_NODES: TreeNode[] = [
     description: "That which is heard. Direct cosmic revelations perceived by seers in deep meditation. This includes the Vedas and Upanishads.",
     x: 200,
     y: 180,
-    icon: "📕"
+    icon: "📕",
+    image: "/images/maharishi-guru.png",
+    quote: "एकं सद्विप्रा बहुधा वदन्ति।",
+    quoteTranslation: "Truth is One, though the sages speak of it in many ways."
   },
   {
     id: "smriti",
@@ -550,7 +559,10 @@ const TREE_NODES: TreeNode[] = [
     description: "That which is remembered. Human expositions, historical epics, and traditional texts mapping codes of conduct. Includes Mahabharata, Ramayana, and Puranas.",
     x: 400,
     y: 180,
-    icon: "📜"
+    icon: "📜",
+    image: "/images/origins-dharma.png",
+    quote: "धर्म एव हतो हन्ति धर्मो रक्षति रक्षितः।",
+    quoteTranslation: "Dharma destroyed destroys; Dharma protected protects."
   },
   {
     id: "darshana",
@@ -560,7 +572,10 @@ const TREE_NODES: TreeNode[] = [
     description: "Philosophical insights and viewpoints. The six orthodox schools of Indian logic, metaphysics, and psychology, including Yoga and Vedanta.",
     x: 600,
     y: 180,
-    icon: "🧘"
+    icon: "🧘",
+    image: "/images/upanishadic-wisdom.png",
+    quote: "अथातो ब्रह्मजिज्ञासा।",
+    quoteTranslation: "Now therefore, let us inquire into Brahman (the Absolute)."
   },
   {
     id: "vedas",
@@ -570,7 +585,10 @@ const TREE_NODES: TreeNode[] = [
     description: "Rigveda, Samaveda, Yajurveda, and Atharvaveda. The foundational pillars of knowledge, rituals, hymns, and sciences.",
     x: 100,
     y: 320,
-    icon: "🛕"
+    icon: "🛕",
+    image: "/images/vedic-revelation.png",
+    quote: "सङ्गच्छध्वं संवदध्वं सं वो मनांसि जानताम्।",
+    quoteTranslation: "Walk together, speak together, let your minds be in harmony."
   },
   {
     id: "upanishads",
@@ -580,7 +598,10 @@ const TREE_NODES: TreeNode[] = [
     description: "The spiritual and non-dual core (Vedanta) exploring the nature of Atman (self) and Brahman (absolute reality).",
     x: 230,
     y: 320,
-    icon: "🌿"
+    icon: "🌿",
+    image: "/images/upanishadic-wisdom.png",
+    quote: "असतो मा सद्गमय तमसो मा ज्योतिर्गमय।",
+    quoteTranslation: "Lead me from the unreal to the real, lead me from darkness to light."
   },
   {
     id: "epics",
@@ -590,7 +611,10 @@ const TREE_NODES: TreeNode[] = [
     description: "Ramayana and Mahabharata. Historical epics documenting the play of Dharma in family and statecraft.",
     x: 350,
     y: 320,
-    icon: "🏹"
+    icon: "🏹",
+    image: "/images/ramayana-era.png",
+    quote: "रामो विग्रहवान् धर्मः।",
+    quoteTranslation: "Rama is the personification of righteousness."
   },
   {
     id: "puranas",
@@ -600,7 +624,10 @@ const TREE_NODES: TreeNode[] = [
     description: "Cosmological narratives and devotional paths presenting abstract Vedic truths through simple stories.",
     x: 450,
     y: 320,
-    icon: "🔱"
+    icon: "🔱",
+    image: "/images/mahabharata-era.png",
+    quote: "अष्टादशपुराणेषु व्यासस्य वचनद्वयम्। परोपकारः पुण्याय पापाय परपीडनम्॥",
+    quoteTranslation: "In all 18 Puranas, Vyasa says only two things: helping others brings merit, harming others brings sin."
   },
   {
     id: "yoga",
@@ -610,7 +637,10 @@ const TREE_NODES: TreeNode[] = [
     description: "Patanjali's eightfold path of self-realization, mind control, and union with cosmic consciousness.",
     x: 570,
     y: 320,
-    icon: "🕉️"
+    icon: "🕉️",
+    image: "/images/civilization-journey.png",
+    quote: "योगश्चित्तवृत्तिनिरोधः।",
+    quoteTranslation: "Yoga is the cessation of the fluctuations of the mind."
   },
   {
     id: "vedanta",
@@ -620,7 +650,10 @@ const TREE_NODES: TreeNode[] = [
     description: "The ultimate culmination of philosophy, establishing non-duality and absolute oneness of Atman and Brahman.",
     x: 700,
     y: 320,
-    icon: "🕊️"
+    icon: "🕊️",
+    image: "/images/upanishadic-wisdom.png",
+    quote: "अहं ब्रह्मास्मि।",
+    quoteTranslation: "I am Brahman (the Supreme Reality)."
   },
   {
     id: "buddhism",
@@ -630,7 +663,10 @@ const TREE_NODES: TreeNode[] = [
     description: "Sramanic paths sharing common roots in Karma, rebirth, and liberation while pursuing non-violence and mindfulness.",
     x: 200,
     y: 440,
-    icon: "☸️"
+    icon: "☸️",
+    image: "/images/buddhist-tradition.png",
+    quote: "अहिंसा परमो धर्मः।",
+    quoteTranslation: "Non-violence is the supreme virtue and path."
   },
   {
     id: "sikhism",
@@ -640,7 +676,10 @@ const TREE_NODES: TreeNode[] = [
     description: "Emerging in the 15th century, emphasizing monotheism, continuous remembrance of God, social equality, and selfless service.",
     x: 600,
     y: 440,
-    icon: "🪯"
+    icon: "🪯",
+    image: "/images/sikh-gurus.png",
+    quote: "मानस की जात सभै एकै पहचानबो।",
+    quoteTranslation: "Recognize the entire human race as one single family."
   }
 ];
 
@@ -658,11 +697,105 @@ const TREE_LINKS = [
   { source: "darshana", target: "sikhism" }
 ];
 
+const spokesData = [
+  {
+    name: "Right View",
+    nameSanskrit: "सम्यक् दृष्टि (Samyag-dṛṣṭi)",
+    desc: "Understanding the true nature of reality, the law of cause and effect (Karma), impermanence, and the paths to end mental suffering.",
+    fact: "Represents the intellectual alignment of consciousness with cosmic order (Rita) before initiating action.",
+    pillar: "Prajña (Wisdom)",
+    quality: "Discernment"
+  },
+  {
+    name: "Right Intention",
+    nameSanskrit: "सम्यक् संकल्प (Samyag-saṅkalpa)",
+    desc: "Resolving to live in accordance with truth, cultivating harmlessness (Ahimsa), loving-kindness, and renouncing malice.",
+    fact: "Directs mental volition towards pure desires and prevents internal conflicts.",
+    pillar: "Prajña (Wisdom)",
+    quality: "Renunciation & Goodwill"
+  },
+  {
+    name: "Right Speech",
+    nameSanskrit: "सम्यक् वाक् (Samyag-vāc)",
+    desc: "Abstaining from lying, slander, harsh language, and vain talk. Speaking words that are truthful, gentle, and beneficial.",
+    fact: "Ensures spoken words do not distort the flow of moral energy in social environments.",
+    pillar: "Shila (Ethical Conduct)",
+    quality: "Truthfulness"
+  },
+  {
+    name: "Right Action",
+    nameSanskrit: "सम्यक् कर्मान्त (Samyag-karmānta)",
+    desc: "Engaging in unselfish and constructive behaviors, abstaining from taking life, stealing, and sensory misconduct.",
+    fact: "The physical execution of non-violence (Ahimsa) in daily actions.",
+    pillar: "Shila (Ethical Conduct)",
+    quality: "Compassion in Action"
+  },
+  {
+    name: "Right Livelihood",
+    nameSanskrit: "सम्यक् आजीव (Samyag-ājīva)",
+    desc: "Earning a living through ethical occupations that do not harm other living beings directly or indirectly.",
+    fact: "Integrates spiritual values with material work, avoiding toxic trades.",
+    pillar: "Shila (Ethical Conduct)",
+    quality: "Righteous Commerce"
+  },
+  {
+    name: "Right Effort",
+    nameSanskrit: "सम्यक् व्यायाम (Samyag-vyāyāma)",
+    desc: "Preventing unwholesome mental states from arising, abandoning active negative thoughts, and cultivating positive mental qualities.",
+    fact: "The energetic engine driving consciousness toward self-mastery.",
+    pillar: "Samadhi (Mental Discipline)",
+    quality: "Vigilance & Persistence"
+  },
+  {
+    name: "Right Mindfulness",
+    nameSanskrit: "सम्यक् स्मृति (Samyag-smṛti)",
+    desc: "Maintaining constant, alert awareness of the body, feelings, mind, and thoughts without attachment or aversion.",
+    fact: "Grounds the observer in the eternal present, dissolving illusions of the ego.",
+    pillar: "Samadhi (Mental Discipline)",
+    quality: "Self-Awareness"
+  },
+  {
+    name: "Right Concentration",
+    nameSanskrit: "सम्यक् समाधि (Samyag-samādhi)",
+    desc: "Developing single-pointed mental focus and tranquility, paving the way for deep meditative absorptions and pure insight.",
+    fact: "The final meditative state where individual awareness merges with universal truth.",
+    pillar: "Samadhi (Mental Discipline)",
+    quality: "Meditative Absorption"
+  }
+];
+
 export default function Home() {
   const [activeSection, setActiveSection] = useState("kaal-chakra");
   const [counts, setCounts] = useState({ years: 0, followers: 0, texts: 0 });
   const [copied, setCopied] = useState(false);
   const [selectedTreeNode, setSelectedTreeNode] = useState<string | null>(null);
+  const [selectedSpoke, setSelectedSpoke] = useState<number>(0);
+  
+  // 3D Parallax Tilt for Dharma Chakra
+  const tiltX = useMotionValue(0);
+  const tiltY = useMotionValue(0);
+  
+  const rotateX = useTransform(tiltY, [-250, 250], [8, -8]);
+  const rotateY = useTransform(tiltX, [-250, 250], [-8, 8]);
+  
+  const springConfig = { damping: 25, stiffness: 120 };
+  const rotateXSpring = useSpring(rotateX, springConfig);
+  const rotateYSpring = useSpring(rotateY, springConfig);
+  
+  const handleWheelMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left - width / 2;
+    const mouseY = e.clientY - rect.top - height / 2;
+    tiltX.set(mouseX);
+    tiltY.set(mouseY);
+  };
+  
+  const handleWheelMouseLeave = () => {
+    tiltX.set(0);
+    tiltY.set(0);
+  };
   
   const { playOm, playSuccess, playClick } = useSacredSound();
   const { language } = useLanguageStore();
@@ -875,8 +1008,8 @@ export default function Home() {
         <div 
           className="absolute -inset-x-2 -top-2 -bottom-10 z-0 bg-cover bg-no-repeat pointer-events-none select-none"
           style={{
-            backgroundImage: "linear-gradient(to bottom, rgba(3, 1, 7, 0.15) 0%, rgba(8, 3, 20, 0.12) 45%, rgba(3, 1, 7, 0.95) 100%), url('/images/hero-temple-sanctum.png')",
-            backgroundPosition: "center 38%"
+            backgroundImage: "linear-gradient(to bottom, var(--hero-overlay-start) 0%, var(--hero-overlay-mid) 45%, var(--hero-overlay-end) 100%), var(--hero-temple-image)",
+            backgroundPosition: "center"
           }}
         />
         {/* Cinematic Animated Starfield and Cosmic Nebulae overlays */}
@@ -888,43 +1021,6 @@ export default function Home() {
         <div className="absolute bottom-[20%] left-[20%] w-1.5 h-1.5 rounded-full bg-white opacity-40 animate-pulse star-twinkle-3" />
         <div className="absolute bottom-[35%] right-[25%] w-2.5 h-2.5 rounded-full bg-[#F5C242] opacity-25 blur-[1px] animate-pulse star-twinkle-1" />
 
-        {/* Floating Sacred Geometry Mandala watermark background */}
-        <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none opacity-[0.05] select-none scale-110">
-          <svg className="w-[600px] h-[600px] text-[#F5C242] spin-cosmic-slow" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="0.15" strokeDasharray="1,2" />
-            <circle cx="50" cy="50" r="35" fill="none" stroke="currentColor" strokeWidth="0.25" />
-            {Array.from({ length: 24 }).map((_, i) => {
-              const angle = (i * 360) / 24;
-              return (
-                <line
-                  key={i}
-                  x1="50"
-                  y1="50"
-                  x2={(50 + 35 * Math.cos((angle * Math.PI) / 180)).toFixed(4)}
-                  y2={(50 + 35 * Math.sin((angle * Math.PI) / 180)).toFixed(4)}
-                  stroke="currentColor"
-                  strokeWidth="0.08"
-                  opacity="0.5"
-                />
-              );
-            })}
-            {Array.from({ length: 8 }).map((_, i) => {
-              const angle = (i * 360) / 8;
-              return (
-                <circle
-                  key={i}
-                  cx={(50 + 20 * Math.cos((angle * Math.PI) / 180)).toFixed(4)}
-                  cy={(50 + 20 * Math.sin((angle * Math.PI) / 180)).toFixed(4)}
-                  r="8"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="0.12"
-                />
-              );
-            })}
-          </svg>
-        </div>
-
         {/* CENTERPIECE: Cinematic Embossed Sanskrit Typography with Soft Glow */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -935,11 +1031,11 @@ export default function Home() {
           {/* Volumetric Radial Light Glow behind lettering */}
           <div className="absolute w-[200px] h-[200px] md:w-[400px] md:h-[400px] rounded-full bg-[radial-gradient(circle_at_center,rgba(245,194,66,0.22)_0%,rgba(139,92,246,0.06)_40%,transparent_70%)] blur-[40px] pointer-events-none select-none -z-10" />
           
-          <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-[#FFE485] via-[#F5C242] to-[#B8860B] drop-shadow-[0_4px_25px_rgba(184,134,11,0.65)] font-sanskrit select-text uppercase">
+          <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-[var(--hero-title-start)] via-[var(--hero-title-mid)] to-[var(--hero-title-end)] font-sanskrit select-text uppercase" style={{ filter: "var(--hero-text-glow)" }}>
             सनातन
           </h1>
           <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-[#F5C242] to-transparent mt-3" />
-          <p className="text-[10px] sm:text-xs md:text-sm tracking-[0.25em] text-[#FFE485]/80 uppercase font-mono font-bold mt-4 max-w-lg select-text">
+          <p className="text-[10px] sm:text-xs md:text-sm tracking-[0.25em] text-[var(--hero-subtitle)] uppercase font-mono font-bold mt-4 max-w-lg select-text">
             {currentLang === "SA" ? "शाश्वतः धर्मः" : currentLang === "HI" ? "शाश्वत सनातन धर्म" : "The Eternal Way of Righteousness"}
           </p>
         </motion.div>
@@ -1007,14 +1103,14 @@ export default function Home() {
                 <Link
                   href="/library/gita/chapter/1"
                   onClick={() => playClick()}
-                  className="flex-1 text-center px-4 py-3 rounded-lg border border-[#F5C242]/40 hover:border-[#F5C242] bg-[#120a22]/50 text-[#F5C242] hover:text-white font-bold uppercase tracking-wider text-[10px] sm:text-xs hover:bg-[#F5C242]/10 transition-all duration-500 transform hover:-translate-y-0.5 no-underline block"
+                  className="flex-1 text-center px-4 py-3 rounded-lg border border-[var(--border-gold)]/40 hover:border-[var(--accent-gold)] bg-card-bg text-gold hover:text-text-main font-bold uppercase tracking-wider text-[10px] sm:text-xs hover:bg-[var(--accent-gold)]/10 transition-all duration-500 transform hover:-translate-y-0.5 no-underline block"
                 >
                   {activeT.readGita}
                 </Link>
                 <Link
                   href="/history"
                   onClick={() => playClick()}
-                  className="flex-1 text-center px-4 py-3 rounded-lg bg-white/5 border border-white/10 hover:border-[#FFE485] text-white hover:text-[#FFE485] font-bold uppercase tracking-wider text-[10px] sm:text-xs hover:bg-white/10 transition-all duration-500 transform hover:-translate-y-0.5 no-underline block"
+                  className="flex-1 text-center px-4 py-3 rounded-lg bg-card-bg border border-[var(--border-gold)] hover:border-[var(--accent-gold)] text-text-main hover:text-gold font-bold uppercase tracking-wider text-[10px] sm:text-xs hover:bg-[var(--bg-secondary)] transition-all duration-500 transform hover:-translate-y-0.5 no-underline block"
                 >
                   {activeT.timeline}
                 </Link>
@@ -1027,7 +1123,7 @@ export default function Home() {
                 <span className="text-[10px] text-text-muted uppercase tracking-widest font-sans font-semibold">
                   {currentLang === "EN" ? "Years History" : currentLang === "HI" ? "वर्षों का इतिहास" : "वर्षाणि"}
                 </span>
-                <span className="text-base font-bold text-[#F5C242] font-mono tracking-tight drop-shadow-[0_0_8px_rgba(245,194,66,0.3)]">
+                <span className="text-base font-bold text-gold font-mono tracking-tight drop-shadow-[0_0_8px_rgba(245,194,66,0.3)]">
                   {currentLang === "EN" ? `${counts.years}+` : `${counts.years.toLocaleString()}+`}
                 </span>
               </div>
@@ -1036,7 +1132,7 @@ export default function Home() {
                 <span className="text-[10px] text-text-muted uppercase tracking-widest font-sans font-semibold">
                   {currentLang === "EN" ? "Followers" : currentLang === "HI" ? "अनुयायी" : "भक्ताः"}
                 </span>
-                <span className="text-base font-bold text-[#F5C242] font-mono tracking-tight drop-shadow-[0_0_8px_rgba(245,194,66,0.3)]">
+                <span className="text-base font-bold text-gold font-mono tracking-tight drop-shadow-[0_0_8px_rgba(245,194,66,0.3)]">
                   {currentLang === "EN" ? `${counts.followers}B+` : `${counts.followers} अरब+`}
                 </span>
               </div>
@@ -1045,7 +1141,7 @@ export default function Home() {
                 <span className="text-[10px] text-text-muted uppercase tracking-widest font-sans font-semibold">
                   {currentLang === "EN" ? "Sacred Texts" : currentLang === "HI" ? "पवित्र ग्रन्थ" : "ग्रन्थाः"}
                 </span>
-                <span className="text-base font-bold text-[#F5C242] font-mono tracking-tight drop-shadow-[0_0_8px_rgba(245,194,66,0.3)]">
+                <span className="text-base font-bold text-gold font-mono tracking-tight drop-shadow-[0_0_8px_rgba(245,194,66,0.3)]">
                   {currentLang === "EN" ? `${counts.texts}+` : `${counts.texts}+`}
                 </span>
               </div>
@@ -1075,7 +1171,7 @@ export default function Home() {
         id="kaal-chakra"
         className="relative min-h-screen w-full flex flex-col justify-center items-center px-6 py-16 overflow-hidden select-none border-b border-[var(--border-color)] bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "linear-gradient(to bottom, rgba(5, 2, 12, 0.72) 0%, rgba(5, 2, 12, 0.72) 100%), url('/images/cosmic-space.png')",
+          backgroundImage: "var(--cosmic-bg-blend)",
         }}
       >
         {/* Centered Section Header */}
@@ -1083,7 +1179,7 @@ export default function Home() {
           <span className="text-[#F5C242] text-xs uppercase tracking-widest font-extrabold bg-[#F5C242]/10 px-4 py-2 rounded-full w-fit border border-[#F5C242]/30 shadow-[0_0_15px_rgba(245,194,66,0.15)] font-mono">
             {activeT.kaalChakraTitle}
           </span>
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-white leading-normal mt-1">
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-text-main leading-normal mt-1">
             {currentLang === "SA" ? "कालचक्रम्" : currentLang === "HI" ? "काल चक्र" : "Kaal Chakra"}
           </h2>
           <p className="text-sm md:text-base text-text-muted leading-relaxed max-w-2xl px-4">
@@ -1138,9 +1234,9 @@ export default function Home() {
             </g>
 
             {/* Concentric outer rings */}
-            <circle cx="250" cy="250" r="230" fill="none" stroke="#F5C242" strokeOpacity={0.15} strokeWidth={1.5} />
-            <circle cx="250" cy="250" r="225" fill="none" stroke="#FFE485" strokeOpacity={0.25} strokeWidth={1} strokeDasharray="3,3" />
-            <circle cx="250" cy="250" r="215" fill="none" stroke="#F5C242" strokeOpacity={0.35} strokeWidth={2} />
+            <circle cx="250" cy="250" r="230" fill="none" stroke="var(--clock-text-secondary)" strokeOpacity={0.15} strokeWidth={1.5} />
+            <circle cx="250" cy="250" r="225" fill="none" stroke="var(--clock-text-primary)" strokeOpacity={0.25} strokeWidth={1} strokeDasharray="3,3" />
+            <circle cx="250" cy="250" r="215" fill="none" stroke="var(--clock-text-secondary)" strokeOpacity={0.35} strokeWidth={2} />
             
             {/* Outer degree ticks (High-Precision 180 Ticks for HD chronometer styling) */}
             <g className="opacity-30">
@@ -1215,37 +1311,36 @@ export default function Home() {
                 );
               })}
 
-              <circle cx="250" cy="250" r="170" fill="none" stroke="#F5C242" strokeOpacity={0.25} strokeWidth={1} strokeDasharray="6,4" />
-              <circle cx="250" cy="250" r="135" fill="none" stroke="#F5C242" strokeOpacity={0.2} strokeWidth={1.5} />
+              <circle cx="250" cy="250" r="170" fill="none" stroke="var(--clock-text-secondary)" strokeOpacity={0.25} strokeWidth={1} strokeDasharray="6,4" />
+              <circle cx="250" cy="250" r="135" fill="none" stroke="var(--clock-text-secondary)" strokeOpacity={0.2} strokeWidth={1.5} />
 
               {(ZODIACS[currentLang] || ZODIACS.EN).map((zod, idx) => {
-                const angle = (idx * 360) / 12 - 90;
-                const angleRad = (angle * Math.PI) / 180;
-                const rText = 152;
-                const x = round(250 + rText * Math.cos(angleRad));
-                const y = round(250 + rText * Math.sin(angleRad));
+                const angle = (idx * 360) / 12;
+                const angleRotated = angle - 90;
                 return (
-                  <g key={idx} className="select-none">
+                  <g 
+                    key={idx} 
+                    transform={`rotate(${angleRotated} 250 250) translate(250 ${250 - 152})`}
+                    className="select-none"
+                  >
                     <text
-                      x={x}
-                      y={y}
+                      x="0"
+                      y="-4"
                       textAnchor="middle"
                       dominantBaseline="central"
-                      transform={`rotate(${angle + 90}, ${x}, ${y})`}
-                      fill="#FFE485"
-                      className="font-sanskrit text-[11px] md:text-[12px] font-medium tracking-wide drop-shadow-[0_0_3px_rgba(245,194,66,0.5)]"
+                      fill="var(--clock-text-primary)"
+                      className="font-sanskrit text-[10px] md:text-[11.5px] font-bold tracking-wide"
                     >
                       {zod.name}
                     </text>
                     {currentLang === "EN" && (
                       <text
-                        x={x}
-                        y={y + 11}
+                        x="0"
+                        y="7"
                         textAnchor="middle"
                         dominantBaseline="central"
-                        transform={`rotate(${angle + 90}, ${x}, ${y + 11})`}
-                        fill="#9CA3AF"
-                        className="font-sanskrit text-[8px] opacity-75"
+                        fill="var(--text-secondary)"
+                        className="font-sanskrit text-[8px] font-medium opacity-85"
                       >
                         {zod.skt}
                       </text>
@@ -1257,27 +1352,27 @@ export default function Home() {
 
             {/* Counter-Clockwise Inner Ring - Yugas */}
             <g className="spin-cosmic-reverse origin-center">
-              <circle cx="250" cy="250" r="85" fill="none" stroke="#FFE485" strokeOpacity={0.3} strokeWidth={1.5} />
+              <circle cx="250" cy="250" r="85" fill="none" stroke="var(--clock-text-primary)" strokeOpacity={0.3} strokeWidth={1.5} />
               
               {(YUGAS[currentLang] || YUGAS.EN).map((yuga, idx) => {
-                const angle = (idx * 360) / 4 - 90;
-                const angleRad = (angle * Math.PI) / 180;
-                const rText = 110;
-                const x = round(250 + rText * Math.cos(angleRad));
-                const y = round(250 + rText * Math.sin(angleRad));
+                const angle = (idx * 360) / 4;
+                const angleRotated = angle - 90;
                 return (
-                  <text
+                  <g
                     key={idx}
-                    x={x}
-                    y={y}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    transform={`rotate(${angle + 90}, ${x}, ${y})`}
-                    fill="#F5C242"
-                    className="font-serif text-[10px] md:text-[11px] uppercase tracking-wider font-bold select-none drop-shadow-[0_0_4px_rgba(245,194,66,0.3)]"
+                    transform={`rotate(${angleRotated} 250 250) translate(250 ${250 - 110})`}
                   >
-                    {yuga}
-                  </text>
+                    <text
+                      x="0"
+                      y="0"
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fill="var(--clock-text-secondary)"
+                      className="font-serif text-[9px] md:text-[10px] uppercase tracking-widest font-bold select-none"
+                    >
+                      {yuga}
+                    </text>
+                  </g>
                 );
               })}
             </g>
@@ -1309,16 +1404,16 @@ export default function Home() {
                 stroke="#F5C242" 
                 strokeWidth="0.5" 
               />
-              <circle cx="250" cy="95" r="3" fill="var(--bg)" stroke="#FFE485" strokeWidth="1" />
-              <circle cx="250" cy="145" r="3" fill="var(--bg)" stroke="#FFE485" strokeWidth="1" />
+              <circle cx="250" cy="95" r="3" fill="var(--bg)" stroke="var(--clock-text-primary)" strokeWidth="1" />
+              <circle cx="250" cy="145" r="3" fill="var(--bg)" stroke="var(--clock-text-primary)" strokeWidth="1" />
             </g>
 
             {/* Center Glowing Om Hub */}
             <g className="origin-center select-none cursor-pointer" onClick={playOm}>
               <circle cx="250" cy="250" r="70" fill="url(#centerGlow)" stroke="none" />
-              <circle cx="250" cy="250" r="55" fill="none" stroke="#F5C242" strokeOpacity={0.4} strokeWidth={1.5} />
-              <circle cx="250" cy="250" r="45" fill="none" stroke="#FFE485" strokeOpacity={0.6} strokeWidth={1} strokeDasharray="4,2" />
-              <circle cx="250" cy="250" r="35" fill="var(--bg)" stroke="#FFE485" strokeWidth="2" />
+              <circle cx="250" cy="250" r="55" fill="none" stroke="var(--clock-text-secondary)" strokeOpacity={0.4} strokeWidth={1.5} />
+              <circle cx="250" cy="250" r="45" fill="none" stroke="var(--clock-text-primary)" strokeOpacity={0.6} strokeWidth={1} strokeDasharray="4,2" />
+              <circle cx="250" cy="250" r="35" fill="var(--bg)" stroke="var(--clock-text-primary)" strokeWidth="2" />
               <text
                 x="250"
                 y="251"
@@ -1343,10 +1438,10 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.1 }}
             className="ag-glass-premium px-6 py-4 border border-[#F5C242]/20 hover:border-[#F5C242]/50 shadow-lg hover:shadow-2xl transition-all duration-300"
           >
-            <div className="text-[10px] text-[#FFE485] uppercase tracking-widest font-mono font-bold">
+            <div className="text-[10px] text-gold uppercase tracking-widest font-mono font-bold">
               {activeT.gregorianAnchor}
             </div>
-            <div className="text-white font-serif text-base md:text-lg font-bold mt-1 leading-tight">
+            <div className="text-text-main font-serif text-base md:text-lg font-bold mt-1 leading-tight">
               {currentTimeStr || "..."}
             </div>
           </motion.div>
@@ -1359,10 +1454,10 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="ag-glass-premium px-6 py-4 border border-[#F5C242]/20 hover:border-[#F5C242]/50 shadow-lg hover:shadow-2xl transition-all duration-300"
           >
-            <span className="text-[10px] text-[#FFE485] uppercase tracking-widest font-mono font-bold">
+            <span className="text-[10px] text-gold uppercase tracking-widest font-mono font-bold">
               {activeT.currentSamvat}
             </span>
-            <div className="text-xl font-extrabold text-[#F5C242] font-mono mt-1 tracking-wide">
+            <div className="text-xl font-extrabold text-gold font-mono mt-1 tracking-wide">
               {cosmicTime.vikramSamvat.toLocaleString()}
             </div>
           </motion.div>
@@ -1375,10 +1470,10 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="ag-glass-premium px-6 py-4 border border-[#F5C242]/20 hover:border-[#F5C242]/50 shadow-lg hover:shadow-2xl transition-all duration-300"
           >
-            <span className="text-[10px] text-[#FFE485] uppercase tracking-widest font-mono font-bold">
+            <span className="text-[10px] text-gold uppercase tracking-widest font-mono font-bold">
               {activeT.creationEra}
             </span>
-            <div className="text-xl font-extrabold text-[#F5C242] font-mono mt-1 tracking-wide">
+            <div className="text-xl font-extrabold text-gold font-mono mt-1 tracking-wide">
               {formatTickingNumber(cosmicTime.srishtiSamvat)}
             </div>
           </motion.div>
@@ -1395,7 +1490,7 @@ export default function Home() {
               <span className="text-[10px] font-bold text-[#FFE485] uppercase tracking-wider font-mono">
                 {activeT.completionRate}
               </span>
-              <span className="font-mono text-xs font-extrabold text-[#F5C242] bg-[#F5C242]/10 px-2 py-0.5 rounded border border-[#F5C242]/20">
+              <span className="font-mono text-xs font-extrabold text-gold bg-gold/10 px-2 py-0.5 rounded border border-gold/20">
                 {cosmicTime.progressPercent.toFixed(8)}%
               </span>
             </div>
@@ -1416,10 +1511,10 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.1 }}
             className="ag-glass-premium px-6 py-4 border border-[#F5C242]/20 hover:border-[#F5C242]/50 shadow-lg hover:shadow-2xl transition-all duration-300"
           >
-            <span className="text-[10px] text-[#FFE485] uppercase tracking-widest font-mono font-bold">
+            <span className="text-[10px] text-gold uppercase tracking-widest font-mono font-bold">
               {activeT.elapsedYears}
             </span>
-            <div className="text-xl font-extrabold text-white font-mono mt-1 tracking-wide">
+            <div className="text-xl font-extrabold text-text-main font-mono mt-1 tracking-wide">
               {formatTickingNumber(cosmicTime.elapsedYears)}
             </div>
           </motion.div>
@@ -1432,10 +1527,10 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="ag-glass-premium px-6 py-4 border border-[#F5C242]/20 hover:border-[#F5C242]/50 shadow-lg hover:shadow-2xl transition-all duration-300"
           >
-            <span className="text-[10px] text-[#FFE485] uppercase tracking-widest font-mono font-bold">
+            <span className="text-[10px] text-gold uppercase tracking-widest font-mono font-bold">
               {activeT.remainingYears}
             </span>
-            <div className="text-xl font-extrabold text-white font-mono mt-1 tracking-wide">
+            <div className="text-xl font-extrabold text-text-main font-mono mt-1 tracking-wide">
               {formatTickingNumber(cosmicTime.remainingYears)}
             </div>
           </motion.div>
@@ -1448,10 +1543,10 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="ag-glass-premium px-6 py-4 border border-[#F5C242]/20 shadow-lg flex justify-between items-center sm:col-span-2 lg:col-span-3 xl:col-span-2"
           >
-            <span className="text-[10px] text-[#FFE485] uppercase tracking-widest font-mono font-bold">
+            <span className="text-[10px] text-gold uppercase tracking-widest font-mono font-bold">
               {activeT.cosmicAge}
             </span>
-            <span className="text-[#F5C242] font-serif text-sm font-bold italic">
+            <span className="text-gold font-serif text-sm font-bold italic">
               {currentLang === "SA"
                 ? "कलियुगः - प्रथमचरणम्"
                 : currentLang === "HI"
@@ -1460,30 +1555,562 @@ export default function Home() {
             </span>
           </motion.div>
         </div>
+      </section>
 
-        {/* Scroll Chevron to Creation section */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 animate-bounce">
-          <a
-            href="#creation"
-            onClick={(e) => {
-              e.preventDefault();
-              document.getElementById("creation")?.scrollIntoView({ behavior: "smooth" });
-              playClick();
-            }}
-            className="text-[#F5C242] opacity-60 hover:opacity-100 transition-opacity"
-            aria-label="Scroll to Creation"
-          >
-            <ChevronDown className="w-8 h-8" />
-          </a>
+      {/* SECTION 0.5: DHARMA CHAKRA (Interactive Noble Wheel of Law) */}
+      <section
+        id="dharma-chakra"
+        className="w-full py-phi-3xl md:py-phi-4xl px-phi-lg border-t border-[var(--border-color)] bg-cover bg-center bg-no-repeat transition-all duration-500"
+        style={{
+          backgroundImage: "var(--section-bg-blend)"
+        }}
+      >
+        <div className="w-full max-w-7xl mx-auto flex flex-col gap-phi-xl">
+          {/* Header */}
+          <div className="text-center flex flex-col gap-phi-sm mb-4">
+            <span className="text-gold text-xs uppercase tracking-widest font-extrabold bg-gold/10 px-4 py-2 rounded-full w-fit mx-auto border border-gold/30 shadow-[0_0_15px_rgba(184,134,11,0.1)] font-mono">
+              {currentLang === "HI" ? "अष्टाङ्ग मार्ग" : currentLang === "SA" ? "अष्टाङ्गयोगः" : "The Eightfold Path"}
+            </span>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-text-main">
+              {currentLang === "HI" ? "धर्म चक्र — ब्रह्मांडीय नियम" : currentLang === "SA" ? "धर्मचक्रम्" : "Dharma Chakra — The Wheel of Law"}
+            </h2>
+            <p className="text-sm md:text-base text-text-muted max-w-2xl mx-auto leading-relaxed">
+              {currentLang === "HI" 
+                ? "सनातन और बौद्ध दर्शन का एक परम प्रतीक, जो सदाचार, नैतिक अनुशासन और चेतना के संतुलन का प्रतिनिधित्व करता है।"
+                : "The eternal symbol of cosmic order, moral virtue, and mental discipline. Click on any spoke of the golden wheel to explore the Noble Eightfold Path."}
+            </p>
+          </div>
+
+          {/* Interactive Wheel Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mt-phi-md">
+            {/* Left Column: Interactive SVG Wheel (Gilded Raja monument with 3D Parallax) */}
+            <div className="lg:col-span-6 flex justify-center items-center relative py-4">
+              {/* Outer soft golden halo / Solar rays */}
+              <div className="absolute w-[320px] h-[320px] sm:w-[420px] sm:h-[420px] lg:w-[500px] lg:h-[500px] rounded-full bg-[radial-gradient(circle_at_center,rgba(245,194,66,0.15)_0%,rgba(184,134,11,0.05)_50%,transparent_70%)] blur-[30px] pointer-events-none select-none" />
+
+              <motion.div
+                onMouseMove={handleWheelMouseMove}
+                onMouseLeave={handleWheelMouseLeave}
+                style={{
+                  rotateX: rotateXSpring,
+                  rotateY: rotateYSpring,
+                  transformStyle: "preserve-3d",
+                  perspective: 1200
+                }}
+                className="relative w-[340px] h-[340px] sm:w-[460px] sm:h-[460px] lg:w-[580px] lg:h-[580px] flex items-center justify-center transition-all duration-300"
+              >
+                <svg 
+                  viewBox="0 0 400 400" 
+                  className="w-full h-full drop-shadow-[0_10px_35px_rgba(0,0,0,0.4)] select-none overflow-visible"
+                  style={{ transform: "translateZ(0px)" }}
+                >
+                  <defs>
+                    {/* Premium 3D Gold Embossing Filter */}
+                    <filter id="gold-emboss" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="blur" />
+                      <feSpecularLighting in="blur" surfaceScale="2" specularConstant="1.4" specularExponent="16" lightingColor="#FFE485" result="specOut">
+                        <fePointLight x="180" y="80" z="90" />
+                      </feSpecularLighting>
+                      <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOutMapped" />
+                      <feComposite in="SourceGraphic" in2="specOutMapped" operator="arithmetic" k1="0" k2="1" k3="0.85" k4="0" result="lit" />
+                      <feMerge>
+                        <feMergeNode in="lit" />
+                      </feMerge>
+                    </filter>
+
+                    {/* Metallic Gold Gradient */}
+                    <linearGradient id="gold-metallic" x1="0%" y1="100%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#785006" />
+                      <stop offset="25%" stopColor="#F5C242" />
+                      <stop offset="50%" stopColor="#FFF2B2" />
+                      <stop offset="75%" stopColor="#DAA520" />
+                      <stop offset="100%" stopColor="#8A5A00" />
+                    </linearGradient>
+
+                    {/* Glowing Active Saffron-Gold Gradient */}
+                    <linearGradient id="saffron-active-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#FF8C00" />
+                      <stop offset="50%" stopColor="#FF4500" />
+                      <stop offset="100%" stopColor="#8B0000" />
+                    </linearGradient>
+
+                    {/* Solar Aura radial gradient */}
+                    <radialGradient id="solar-aura" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="#F5C242" stopOpacity="0.2" />
+                      <stop offset="60%" stopColor="#FF4500" stopOpacity="0.04" />
+                      <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+                    </radialGradient>
+
+                    {/* Radial Hub Gradient */}
+                    <radialGradient id="gold-radial" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="#FFE485" />
+                      <stop offset="70%" stopColor="#F5C242" />
+                      <stop offset="95%" stopColor="#B8860B" />
+                      <stop offset="100%" stopColor="#5C4003" />
+                    </radialGradient>
+
+                    {/* Saffron Glow Filter */}
+                    <filter id="saffron-glow-filter" x="-50%" y="-50%" width="200%" height="200%">
+                      <feGaussianBlur stdDeviation="6" result="blur" />
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+
+                  {/* Cosmic Solar Aura Backdrop */}
+                  <g className="origin-center pointer-events-none">
+                    <circle cx="200" cy="200" r="190" fill="url(#solar-aura)" className="animate-pulse" style={{ animationDuration: "5s" }} />
+                    <circle cx="200" cy="200" r="162" fill="none" stroke="url(#gold-metallic)" strokeWidth="0.5" opacity="0.12" />
+                  </g>
+
+                  {/* ROTATING BACKGROUND: Cosmic Sun Rays & Halo */}
+                  <g className="animate-spin-slow-clockwise">
+                    {/* Concentric subtle rings */}
+                    <circle cx="200" cy="200" r="162" fill="none" stroke="url(#gold-metallic)" strokeWidth="0.75" opacity="0.2" strokeDasharray="5,5" />
+                    <circle cx="200" cy="200" r="172" fill="none" stroke="url(#gold-metallic)" strokeWidth="0.5" opacity="0.15" />
+                    
+                    {/* Soft Sun Ray Spokes (faint background lines) */}
+                    {Array.from({ length: 24 }).map((_, i) => {
+                      const rayAngle = i * 15;
+                      return (
+                        <line
+                          key={`ray-${i}`}
+                          x1="200"
+                          y1="200"
+                          x2="200"
+                          y2="25"
+                          stroke="url(#gold-metallic)"
+                          strokeWidth="0.5"
+                          opacity="0.1"
+                          transform={`rotate(${rayAngle} 200 200)`}
+                        />
+                      );
+                    })}
+                  </g>
+
+                  {/* ROTATING OUTER RIM: Contains Sanskrit Inscriptions & Dots */}
+                  <g className="animate-spin-slow-clockwise" filter="url(#gold-emboss)">
+                    {/* Outer Rim main body */}
+                    <circle cx="200" cy="200" r="145" fill="none" stroke="url(#gold-metallic)" strokeWidth="7" />
+                    <circle cx="200" cy="200" r="139" fill="none" stroke="var(--bg)" strokeWidth="1.5" />
+                    <circle cx="200" cy="200" r="150" fill="none" stroke="url(#gold-metallic)" strokeWidth="1.2" opacity="0.5" />
+                    
+                    {/* Sanskrit Gayatri Mantra on Path */}
+                    <path id="rim-sanskrit-path" d="M 200, 48 A 152,152 0 1,1 199.9,48" fill="none" stroke="none" />
+                    <text className="font-sanskrit text-[9px] font-bold tracking-[0.25em]" fill="url(#gold-metallic)" opacity="0.95">
+                      <textPath href="#rim-sanskrit-path" startOffset="0%">
+                        ॐ भूर्भुवः स्वः तत्सवितुर्वरेण्यं भर्गो देवस्य धीमहि धियो यो नः प्रचोदयात् ॐ
+                      </textPath>
+                    </text>
+
+                    {/* Outer rim decorative nodes (represent concentrations/moral states) */}
+                    {Array.from({ length: 24 }).map((_, idx) => {
+                      const dotAngle = idx * 15;
+                      const dotRad = (dotAngle * Math.PI) / 180;
+                      return (
+                        <circle
+                          key={`rim-dot-${idx}`}
+                          cx={round(200 + 145 * Math.sin(dotRad))}
+                          cy={round(200 - 145 * Math.cos(dotRad))}
+                          r="1.8"
+                          fill="url(#gold-metallic)"
+                          opacity="0.9"
+                        />
+                      );
+                    })}
+                  </g>
+
+                  {/* STATIONARY SPOKES: Ornate and Interactive */}
+                  {Array.from({ length: 8 }).map((_, idx) => {
+                    const angle = idx * 45;
+                    const isSelected = selectedSpoke === idx;
+                    return (
+                      <g
+                        key={idx}
+                        transform={`rotate(${angle} 200 200)`}
+                        className="cursor-pointer group"
+                        onClick={() => { setSelectedSpoke(idx); playClick(); }}
+                      >
+                        {/* Glow behind the active spoke */}
+                        {isSelected && (
+                          <line
+                            x1="200"
+                            y1="165"
+                            x2="200"
+                            y2="60"
+                            stroke="url(#saffron-active-grad)"
+                            strokeWidth="12"
+                            strokeLinecap="round"
+                            filter="url(#saffron-glow-filter)"
+                            opacity="0.5"
+                          />
+                        )}
+
+                        {/* Active Spoke Visual Enhancements (Ripples, Sparks, Beams) */}
+                        {isSelected && (
+                          <>
+                            {/* Animated Outward Energy Wave (Laser Beam) */}
+                            <motion.line
+                              x1="200"
+                              y1="160"
+                              x2="200"
+                              y2="52"
+                              stroke="#FFFFFF"
+                              strokeWidth="4"
+                              strokeLinecap="round"
+                              initial={{ pathLength: 0, opacity: 1 }}
+                              animate={{ pathLength: 1, opacity: [1, 0.8, 0] }}
+                              transition={{ duration: 0.6, ease: "easeOut" }}
+                              style={{ filter: "drop-shadow(0 0 8px #FFE485)" }}
+                            />
+                            {/* Spoke tip circular ripple */}
+                            <motion.circle
+                              cx="200"
+                              cy="52"
+                              initial={{ r: 0, opacity: 1, strokeWidth: 3 }}
+                              animate={{ r: 75, opacity: 0, strokeWidth: 0.2 }}
+                              transition={{ duration: 0.8, ease: "easeOut" }}
+                              fill="none"
+                              stroke="url(#saffron-active-grad)"
+                              style={{ filter: "drop-shadow(0 0 4px #FF4500)" }}
+                            />
+                            {/* Hub circular ripple */}
+                            <motion.circle
+                              cx="200"
+                              cy="200"
+                              initial={{ r: 26, opacity: 0.9, strokeWidth: 2 }}
+                              animate={{ r: 145, opacity: 0, strokeWidth: 0.2 }}
+                              transition={{ duration: 0.9, ease: "easeOut", delay: 0.15 }}
+                              fill="none"
+                              stroke="url(#gold-metallic)"
+                              style={{ filter: "drop-shadow(0 0 6px #FFE485)" }}
+                            />
+                            {/* Floating sparks rising from hub along spoke */}
+                            {Array.from({ length: 6 }).map((_, i) => {
+                              const delay = i * 0.08;
+                              const startX = 200 + (Math.random() - 0.5) * 8;
+                              const endX = startX + (Math.random() - 0.5) * 15;
+                              return (
+                                <motion.circle
+                                  key={`spark-${i}`}
+                                  cx={startX}
+                                  cy={150}
+                                  r={Math.random() * 2 + 1}
+                                  fill="#FFE485"
+                                  initial={{ cy: 150, opacity: 1, scale: 1 }}
+                                  animate={{ 
+                                    cy: [150, 60], 
+                                    cx: [startX, endX],
+                                    opacity: [0.8, 1, 0],
+                                    scale: [1, 1.4, 0.4]
+                                  }}
+                                  transition={{ duration: 0.7, delay, ease: "easeOut" }}
+                                  style={{ filter: "drop-shadow(0 0 3px #FFA500)" }}
+                                />
+                              );
+                            })}
+                          </>
+                        )}
+
+                        {/* Ornate Spoke Main Column */}
+                        <line
+                          x1="200"
+                          y1="165"
+                          x2="200"
+                          y2="60"
+                          stroke={isSelected ? "url(#saffron-active-grad)" : "url(#gold-metallic)"}
+                          strokeWidth={isSelected ? 6 : 4.5}
+                          className="transition-all duration-300"
+                        />
+
+                        {/* Sculpted outer struts for premium volumetric look */}
+                        <path
+                          d="M 194,165 C 194,130 196,105 192,65 L 195,62 L 200,105 L 205,62 L 208,65 C 204,105 206,130 206,165 Z"
+                          fill="url(#gold-metallic)"
+                          filter="url(#gold-emboss)"
+                          opacity="0.85"
+                        />
+
+                        {/* Central Medallion Jewel - Glowing Diamond Facet */}
+                        <polygon
+                          points="200,104 206,112 200,120 194,112"
+                          fill={isSelected ? "#FFF2B2" : "url(#gold-metallic)"}
+                          stroke={isSelected ? "#FF4500" : "#B8860B"}
+                          strokeWidth="0.75"
+                          style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.15))" }}
+                          className="transition-all duration-300"
+                        />
+
+                        {/* Ornate collar near the hub */}
+                        <path
+                          d="M 191,155 Q 200,158 209,155 L 206,161 Q 200,163 194,161 Z"
+                          fill="url(#gold-metallic)"
+                          filter="url(#gold-emboss)"
+                        />
+
+                        {/* Ornate top bracket attaching to outer rim */}
+                        <path
+                          d="M 188,68 Q 200,77 212,68 L 205,58 Q 200,60 195,58 Z"
+                          fill="url(#gold-metallic)"
+                          filter="url(#gold-emboss)"
+                        />
+
+                        {/* Lotus Bud Handle at Spoke Tip */}
+                        <path
+                          d="M 195,58 C 190,52 195,44 200,44 C 205,44 210,52 205,58 Z"
+                          fill={isSelected ? "url(#saffron-active-grad)" : "url(#gold-metallic)"}
+                          stroke="#FFE485"
+                          strokeWidth="1.2"
+                          className="transition-all duration-300"
+                          style={isSelected ? { filter: "drop-shadow(0 0 8px #FF4500)" } : {}}
+                        />
+
+                        {/* Large invisible click trigger spoke area */}
+                        <rect
+                          x="180"
+                          y="42"
+                          width="40"
+                          height="130"
+                          fill="transparent"
+                          className="cursor-pointer"
+                        />
+                      </g>
+                    );
+                  })}
+
+                  {/* Ring of 16 Golden Lotus Petals around the Hub */}
+                  <g className="origin-center animate-spin-slow-clockwise">
+                    {Array.from({ length: 16 }).map((_, i) => {
+                      const petalAngle = (i * 360) / 16;
+                      return (
+                        <path
+                          key={`hub-petal-${i}`}
+                          d="M 196,174 C 192,162 200,152 200,152 C 200,152 208,162 204,174 Z"
+                          fill="url(#gold-metallic)"
+                          stroke="#FFE485"
+                          strokeWidth="0.5"
+                          transform={`rotate(${petalAngle} 200 200)`}
+                          opacity="0.9"
+                          style={{ filter: "drop-shadow(0 0 2px rgba(245, 194, 66, 0.4))" }}
+                        />
+                      );
+                    })}
+                  </g>
+
+                  {/* ROTATING HUB ACCENTS (Counter-Clockwise Spin) */}
+                  <g className="animate-spin-slow-counter">
+                    <circle cx="200" cy="200" r="38" fill="url(#gold-radial)" stroke="url(#gold-metallic)" strokeWidth="2.5" />
+                    <circle cx="200" cy="200" r="32" fill="none" stroke="url(#saffron-active-grad)" strokeWidth="1" strokeDasharray="3,2" />
+                    {/* Notch dots for gear-like look */}
+                    {Array.from({ length: 12 }).map((_, i) => {
+                      const notchAngle = i * 30;
+                      const notchRad = (notchAngle * Math.PI) / 180;
+                      return (
+                        <circle
+                          key={`notch-${i}`}
+                          cx={round(200 + 33 * Math.sin(notchRad))}
+                          cy={round(200 - 33 * Math.cos(notchRad))}
+                          r="1.5"
+                          fill="url(#gold-metallic)"
+                        />
+                      );
+                    })}
+                  </g>
+
+                  {/* STATIONARY INNER HUB CORE: Keeps OM symbol perfectly upright */}
+                  <g>
+                    <circle cx="200" cy="200" r="26" fill="var(--bg-card)" stroke="url(#gold-metallic)" strokeWidth="2" />
+                    <circle cx="200" cy="200" r="22" fill="none" stroke="url(#gold-metallic)" strokeWidth="0.5" opacity="0.5" />
+                    
+                    {/* Embossed, glowing golden OM symbol */}
+                    <text
+                      x="200"
+                      y="208"
+                      textAnchor="middle"
+                      className="font-sanskrit text-[24px] font-extrabold select-none pointer-events-none fill-gold"
+                      style={{ filter: "drop-shadow(0 0 6px rgba(245,194,66,0.85))" }}
+                    >
+                      ॐ
+                    </text>
+                  </g>
+
+                  {/* Royal Lotus Pedestal Base (Padmasana) grounding the Monument */}
+                  <g className="origin-center pointer-events-none" opacity="0.95" style={{ filter: "drop-shadow(0 4px 10px rgba(120, 80, 10, 0.3))" }}>
+                    {/* Bottom stand/base plate */}
+                    <path
+                      d="M 110,385 C 110,380 120,378 200,378 C 280,378 290,380 290,385 C 290,389 270,392 200,392 C 130,392 110,399 110,385 Z"
+                      fill="url(#gold-metallic)"
+                      stroke="#FFE485"
+                      strokeWidth="1"
+                    />
+                    <path
+                      d="M 125,378 C 125,373 135,371 200,371 C 265,371 275,373 275,378 C 275,381 255,383 200,383 C 145,383 125,381 125,378 Z"
+                      fill="url(#gold-metallic)"
+                      opacity="0.8"
+                    />
+
+                    {/* Lotus Petals - Row 1 (back layer) */}
+                    <path d="M 140,371 C 130,355 150,345 165,355 C 150,355 145,365 140,371 Z" fill="url(#gold-metallic)" opacity="0.7" />
+                    <path d="M 260,371 C 270,355 250,345 235,355 C 250,355 255,365 260,371 Z" fill="url(#gold-metallic)" opacity="0.7" />
+                    <path d="M 200,371 C 185,348 215,348 200,371 Z" fill="url(#gold-metallic)" opacity="0.7" />
+
+                    {/* Lotus Petals - Row 2 (front layer, larger petals) */}
+                    <path d="M 160,375 C 145,350 175,340 185,360 C 170,362 165,370 160,375 Z" fill="url(#gold-metallic)" stroke="#FFE485" strokeWidth="0.5" />
+                    <path d="M 240,375 C 255,350 225,340 215,360 C 230,362 235,370 240,375 Z" fill="url(#gold-metallic)" stroke="#FFE485" strokeWidth="0.5" />
+                    <path d="M 200,376 C 180,345 220,345 200,376 Z" fill="url(#gold-metallic)" stroke="#FFE485" strokeWidth="0.75" />
+
+                    {/* Decorative details */}
+                    <line x1="135" y1="385" x2="265" y2="385" stroke="#FFF2B2" strokeWidth="0.75" opacity="0.6" />
+                  </g>
+                </svg>
+
+                {/* Spoke index tags surrounding the wheel floating in 3D Parallax */}
+                {Array.from({ length: 8 }).map((_, idx) => {
+                  const angle = idx * 45 - 90;
+                  const angleRad = (angle * Math.PI) / 180;
+                  const rText = 180;
+                  const x = round(200 + rText * Math.cos(angleRad));
+                  const y = round(200 + rText * Math.sin(angleRad));
+                  const isSelected = selectedSpoke === idx;
+                  
+                  // Fetch the name
+                  const spokeName = currentLang === "HI" ? spokesData[idx].nameSanskrit : spokesData[idx].name;
+
+                  return (
+                    <button
+                      key={`spoke-label-${idx}`}
+                      style={{ 
+                        position: "absolute",
+                        left: `${(x / 400) * 100}%`, 
+                        top: `${(y / 400) * 100}%`,
+                        transform: `translate3d(-50%, -50%, 25px) scale(${isSelected ? 1.05 : 1})`,
+                        transformStyle: "preserve-3d"
+                      }}
+                      className={`absolute px-3 py-1 rounded text-[9.5px] md:text-[11.5px] font-extrabold tracking-widest uppercase border transition-all duration-300 cursor-pointer shadow-md ${
+                        isSelected
+                          ? "bg-gradient-to-r from-saffron to-gold border-saffron text-black shadow-lg"
+                          : "bg-card-bg border-[var(--border-color)] text-text-muted hover:border-gold hover:text-text-main"
+                      }`}
+                      onClick={() => { setSelectedSpoke(idx); playClick(); }}
+                    >
+                      {idx + 1}. {spokeName.split(' (')[0]}
+                    </button>
+                  );
+                })}
+              </motion.div>
+            </div>
+
+            {/* Right Column: Information Display Box (Royal Gilded Scroll Plaque) */}
+            <div className="lg:col-span-6 flex flex-col justify-center min-h-[300px]">
+              <motion.div
+                key={selectedSpoke}
+                initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="relative p-6 md:p-8 rounded-3xl border-2 border-gold/30 dark:border-gold/20 shadow-[0_15px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_15px_50px_rgba(0,0,0,0.7)] overflow-hidden bg-gradient-to-br from-white/95 via-[#FAF7F0]/98 to-[#F3ECE0]/95 dark:from-[#140b24]/90 dark:via-[#090414]/95 dark:to-[#030107]/90 backdrop-blur-md select-text"
+              >
+                {/* Gilded Inner Border line */}
+                <div className="absolute inset-1.5 border border-gold/15 rounded-[22px] pointer-events-none" />
+
+                {/* Royal Corner Ornaments */}
+                <div className="absolute top-3.5 left-3.5 w-3 h-3 border-t border-l border-gold/50 pointer-events-none" />
+                <div className="absolute top-3.5 right-3.5 w-3 h-3 border-t border-r border-gold/50 pointer-events-none" />
+                <div className="absolute bottom-3.5 left-3.5 w-3 h-3 border-b border-l border-gold/50 pointer-events-none" />
+                <div className="absolute bottom-3.5 right-3.5 w-3 h-3 border-b border-r border-gold/50 pointer-events-none" />
+
+                {/* Sacred Scroll Header divider */}
+                <div className="flex justify-center items-center gap-2 mb-3 text-gold/50 select-none text-[10px] tracking-widest font-mono">
+                  <span>✦</span>
+                  <div className="w-12 h-[0.5px] bg-gold/30" />
+                  <span>{currentLang === "HI" ? "राज धर्म चक्र" : "ROYAL DECREE"}</span>
+                  <div className="w-12 h-[0.5px] bg-gold/30" />
+                  <span>✦</span>
+                </div>
+
+                <div className="flex items-center gap-4 mb-4 z-10 relative">
+                  <span className="w-12 h-12 rounded-full bg-gradient-to-br from-gold to-[#8C6914] flex items-center justify-center text-lg font-serif font-extrabold text-black shadow-md border border-gold/50">
+                    {selectedSpoke + 1}
+                  </span>
+                  <div>
+                    <h3 className="text-text-main font-serif font-bold text-2xl leading-tight tracking-wide">
+                      {spokesData[selectedSpoke].name}
+                    </h3>
+                    <span className="font-sanskrit text-saffron dark:text-gold text-sm font-bold tracking-wide">
+                      {spokesData[selectedSpoke].nameSanskrit}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="border-l-2 border-saffron dark:border-gold pl-4 py-2 my-4 bg-saffron/5 dark:bg-gold/5 rounded-r z-10 relative">
+                  <p className="text-[10px] text-gold dark:text-gold-light uppercase tracking-widest font-mono font-bold">
+                    {currentLang === "HI" ? "दार्शनिक तथ्य" : "Sacred Tenet"}
+                  </p>
+                  <p className="text-sm text-text-main leading-relaxed font-bold mt-1">
+                    {spokesData[selectedSpoke].fact}
+                  </p>
+                </div>
+
+                <p className="text-sm text-text-muted leading-relaxed mt-4 z-10 relative">
+                  {spokesData[selectedSpoke].desc}
+                </p>
+
+                {/* Minimal Facts Footer */}
+                <div className="grid grid-cols-2 gap-4 mt-6 pt-4 border-t border-gold/20 dark:border-gold/10 text-[10px] font-mono text-text-muted uppercase tracking-wider z-10 relative">
+                  <div>
+                    <span className="text-gold dark:text-gold-light font-bold block">{currentLang === "HI" ? "स्तम्भ" : "Chakra Pillar"}</span>
+                    <span className="text-text-main/80">{spokesData[selectedSpoke].pillar}</span>
+                  </div>
+                  <div>
+                    <span className="text-gold dark:text-gold-light font-bold block">{currentLang === "HI" ? "गुण" : "Mental Quality"}</span>
+                    <span className="text-text-main/80">{spokesData[selectedSpoke].quality}</span>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Summary Facts list (Minimalist layout) */}
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-center text-[10px] font-mono text-text-muted uppercase tracking-widest bg-card-bg/30 border border-[var(--border-color)] p-3 rounded-xl">
+                <div>
+                  <span className="text-gold block font-bold">⭕ The Rim</span>
+                  <span>Mindfulness & Focus</span>
+                </div>
+                <div className="border-t sm:border-t-0 sm:border-x border-[var(--border-color)] py-2 sm:py-0">
+                  <span className="text-gold block font-bold">🎯 The Hub</span>
+                  <span>Moral Discipline (Shila)</span>
+                </div>
+                <div>
+                  <span className="text-gold block font-bold">🚀 The Motion</span>
+                  <span>Cycle of Life & Law</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
+
+      {/* Scroll Chevron to Creation section */}
+      <div className="w-full flex justify-center py-6 border-b border-[var(--border-color)] relative z-20">
+        <a
+          href="#creation"
+          onClick={(e) => {
+            e.preventDefault();
+            document.getElementById("creation")?.scrollIntoView({ behavior: "smooth" });
+            playClick();
+          }}
+          className="text-[#F5C242] opacity-60 hover:opacity-100 transition-opacity animate-bounce"
+          aria-label="Scroll to Creation"
+        >
+          <ChevronDown className="w-8 h-8" />
+        </a>
+      </div>
 
       {/* SECTION 2: THE CREATION */}
       <section
         id="creation"
         className="w-full py-phi-3xl md:py-phi-4xl px-phi-lg flex items-center justify-center border-t border-[var(--border-color)] bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "linear-gradient(to bottom, rgba(3, 1, 7, 0.86) 0%, rgba(3, 1, 7, 0.86) 100%), url('/images/hero-curtain-alt.jpg')",
+          backgroundImage: "var(--section-bg-blend)",
         }}
       >
         <div className="max-w-7xl w-full flex flex-col lg:flex-row items-center gap-phi-xl md:gap-phi-2xl select-text">
@@ -1523,7 +2150,7 @@ export default function Home() {
         id="vedas"
         className="w-full py-phi-3xl md:py-phi-4xl px-phi-lg border-t border-[var(--border-color)] bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "linear-gradient(to bottom, rgba(3, 1, 7, 0.86) 0%, rgba(3, 1, 7, 0.86) 100%), url('/images/hero-curtain-alt.jpg')",
+          backgroundImage: "var(--section-bg-blend)",
         }}
       >
         <div className="w-full max-w-7xl mx-auto flex flex-col gap-phi-xl md:gap-phi-2xl">
@@ -1635,7 +2262,7 @@ export default function Home() {
         id="upanishads"
         className="w-full py-phi-3xl md:py-phi-4xl px-phi-lg border-t border-[var(--border-color)] bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "linear-gradient(to bottom, rgba(3, 1, 7, 0.86) 0%, rgba(3, 1, 7, 0.86) 100%), url('/images/hero-curtain-alt.jpg')",
+          backgroundImage: "var(--section-bg-blend)",
         }}
       >
         <div className="w-full max-w-7xl mx-auto flex flex-col gap-phi-xl md:gap-phi-2xl">
@@ -1674,7 +2301,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-phi-lg md:gap-phi-xl">
             {/* Isha */}
-            <div className="bg-[#0F0F14] border border-[#B8860B20] rounded-xl p-phi-md md:p-phi-lg hover:border-[#FFD700] transition-colors">
+            <div className="bg-card-bg border border-[var(--border-color)] rounded-xl p-phi-md md:p-phi-lg hover:border-gold transition-colors">
               <span className="text-phi-xs text-[#B8860B] uppercase font-mono">Yajurveda</span>
               <h4 className="text-text-main text-phi-lg font-serif font-bold mt-1">Isha Upanishad</h4>
               <p className="text-text-muted text-phi-xs leading-relaxed mt-3">
@@ -1682,7 +2309,7 @@ export default function Home() {
               </p>
             </div>
             {/* Kena */}
-            <div className="bg-[#0F0F14] border border-[#B8860B20] rounded-xl p-phi-md md:p-phi-lg hover:border-[#FFD700] transition-colors">
+            <div className="bg-card-bg border border-[var(--border-color)] rounded-xl p-phi-md md:p-phi-lg hover:border-gold transition-colors">
               <span className="text-phi-xs text-[#B8860B] uppercase font-mono">Samaveda</span>
               <h4 className="text-text-main text-phi-lg font-serif font-bold mt-1">Kena Upanishad</h4>
               <p className="text-text-muted text-phi-xs leading-relaxed mt-3">
@@ -1690,7 +2317,7 @@ export default function Home() {
               </p>
             </div>
             {/* Katha */}
-            <div className="bg-[#0F0F14] border border-[#B8860B20] rounded-xl p-phi-md md:p-phi-lg hover:border-[#FFD700] transition-colors">
+            <div className="bg-card-bg border border-[var(--border-color)] rounded-xl p-phi-md md:p-phi-lg hover:border-gold transition-colors">
               <span className="text-phi-xs text-[#B8860B] uppercase font-mono">Yajurveda</span>
               <h4 className="text-text-main text-phi-lg font-serif font-bold mt-1">Katha Upanishad</h4>
               <p className="text-text-muted text-phi-xs leading-relaxed mt-3">
@@ -1716,7 +2343,7 @@ export default function Home() {
         id="gita"
         className="w-full py-phi-3xl md:py-phi-4xl px-phi-lg border-t border-[var(--border-color)] bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "linear-gradient(to bottom, rgba(3, 1, 7, 0.86) 0%, rgba(3, 1, 7, 0.86) 100%), url('/images/hero-curtain-alt.jpg')",
+          backgroundImage: "var(--section-bg-blend)",
         }}
       >
         <div className="w-full max-w-7xl mx-auto border-2 border-gold/30 rounded-2xl p-phi-xl md:p-phi-2xl relative overflow-hidden bg-card-bg select-text">
@@ -1763,7 +2390,7 @@ export default function Home() {
         id="epics"
         className="w-full py-phi-3xl md:py-phi-4xl px-phi-lg border-t border-[var(--border-color)] bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "linear-gradient(to bottom, rgba(3, 1, 7, 0.86) 0%, rgba(3, 1, 7, 0.86) 100%), url('/images/hero-curtain-alt.jpg')",
+          backgroundImage: "var(--section-bg-blend)",
         }}
       >
         <div className="w-full max-w-7xl mx-auto flex flex-col gap-phi-xl md:gap-phi-2xl">
@@ -1783,10 +2410,10 @@ export default function Home() {
                 <span className="text-phi-xs font-semibold text-gold uppercase tracking-widest bg-gold/15 px-phi-md py-phi-xs rounded-full">
                   Valmiki Ramayana
                 </span>
-                <h3 className="text-white font-serif text-phi-lg md:text-phi-xl font-bold mt-phi-md">
+                <h3 className="text-text-main font-serif text-phi-lg md:text-phi-xl font-bold mt-phi-md">
                   वाल्मीकि रामायण — 24,000 Verses
                 </h3>
-                <p className="text-[#9CA3AF] text-phi-sm leading-relaxed mt-phi-xs italic">
+                <p className="text-text-muted text-phi-sm leading-relaxed mt-phi-xs italic">
                   &ldquo;The story of dharma in an ideal life&rdquo;
                 </p>
                 <div className="w-phi-lg h-0.5 bg-[#B8860B] my-phi-md" />
@@ -1818,10 +2445,10 @@ export default function Home() {
                 <span className="text-phi-xs font-semibold text-[#FB923C] uppercase tracking-widest bg-[#FB923C15] px-phi-md py-phi-xs rounded-full">
                   Veda Vyasa Epic
                 </span>
-                <h3 className="text-white font-serif text-phi-lg md:text-phi-xl font-bold mt-phi-md">
+                <h3 className="text-text-main font-serif text-phi-lg md:text-phi-xl font-bold mt-phi-md">
                   महाभारत — 1,00,000+ Verses
                 </h3>
-                <p className="text-[#9CA3AF] text-phi-sm leading-relaxed mt-phi-xs italic">
+                <p className="text-text-muted text-phi-sm leading-relaxed mt-phi-xs italic">
                   &ldquo;The story of dharma in complex reality&rdquo;
                 </p>
                 <div className="w-phi-lg h-0.5 bg-[#FB923C] my-phi-md" />
@@ -1855,7 +2482,7 @@ export default function Home() {
         id="puranas"
         className="w-full py-phi-3xl md:py-phi-4xl px-phi-lg border-t border-[var(--border-color)] bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "linear-gradient(to bottom, rgba(3, 1, 7, 0.86) 0%, rgba(3, 1, 7, 0.86) 100%), url('/images/hero-curtain-alt.jpg')",
+          backgroundImage: "var(--section-bg-blend)",
         }}
       >
         <div className="w-full max-w-7xl mx-auto flex flex-col gap-phi-xl md:gap-phi-2xl">
@@ -1906,7 +2533,7 @@ export default function Home() {
         id="deities"
         className="w-full py-phi-3xl md:py-phi-4xl px-phi-lg border-t border-[var(--border-color)] bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "linear-gradient(to bottom, rgba(3, 1, 7, 0.86) 0%, rgba(3, 1, 7, 0.86) 100%), url('/images/hero-curtain-alt.jpg')",
+          backgroundImage: "var(--section-bg-blend)",
         }}
       >
         <div className="w-full max-w-7xl mx-auto flex flex-col gap-phi-xl md:gap-phi-2xl">
@@ -1945,7 +2572,7 @@ export default function Home() {
                   {d.emoji}
                 </div>
                 <div>
-                  <h4 className="text-white text-phi-sm font-bold font-serif">{d.name}</h4>
+                  <h4 className="text-text-main text-phi-sm font-bold font-serif">{d.name}</h4>
                   <span className="font-sanskrit text-phi-xs text-[#B8860B] block mt-phi-xs">{d.nameSanskrit}</span>
                   <span className="text-phi-xs text-text-muted block mt-phi-sm leading-tight">{d.epithet}</span>
                 </div>
@@ -1970,7 +2597,7 @@ export default function Home() {
         id="tree"
         className="w-full py-phi-3xl md:py-phi-4xl px-phi-lg border-t border-[var(--border-color)] overflow-hidden bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "linear-gradient(to bottom, rgba(3, 1, 7, 0.86) 0%, rgba(3, 1, 7, 0.86) 100%), url('/images/hero-curtain-alt.jpg')",
+          backgroundImage: "var(--section-bg-blend)",
         }}
       >
         <div className="w-full max-w-7xl mx-auto flex flex-col gap-phi-xl md:gap-phi-2xl">
@@ -1997,17 +2624,17 @@ export default function Home() {
                     if (!sourceNode || !targetNode) return null;
                     
                     const isSelectedPath = selectedTreeNode === sourceNode.id || selectedTreeNode === targetNode.id;
+                    const dy = targetNode.y - sourceNode.y;
+                    const pathD = `M ${sourceNode.x} ${sourceNode.y} C ${sourceNode.x} ${sourceNode.y + dy * 0.5}, ${targetNode.x} ${sourceNode.y + dy * 0.5}, ${targetNode.x} ${targetNode.y}`;
 
                     return (
-                      <motion.line
+                      <motion.path
                         key={`link-${idx}`}
-                        x1={sourceNode.x}
-                        y1={sourceNode.y}
-                        x2={targetNode.x}
-                        y2={targetNode.y}
-                        stroke={isSelectedPath ? "#FFD700" : "rgba(184, 134, 11, 0.25)"}
-                        strokeWidth={isSelectedPath ? 2.5 : 1.5}
-                        strokeDasharray={isSelectedPath ? "none" : "4,4"}
+                        d={pathD}
+                        fill="none"
+                        stroke={isSelectedPath ? "var(--accent-gold)" : "var(--border-gold)"}
+                        strokeWidth={isSelectedPath ? 3.0 : 1.5}
+                        strokeDasharray={isSelectedPath ? "none" : "5,4"}
                         initial={{ pathLength: 0 }}
                         whileInView={{ pathLength: 1 }}
                         viewport={{ once: true }}
@@ -2023,65 +2650,101 @@ export default function Home() {
                     const isBranch = node.type === "branch";
                     
                     return (
-                      <motion.g
-                        key={node.id}
-                        transform={`translate(${node.x}, ${node.y})`}
-                        className="cursor-pointer group"
-                        onClick={() => {
-                          setSelectedTreeNode(isSelected ? null : node.id);
-                          playClick();
-                        }}
-                        whileHover={{ scale: 1.08 }}
-                        whileTap={{ scale: 0.96 }}
-                      >
-                        {/* Outer Glow Ring */}
-                        <circle
-                          cx="0"
-                          cy="0"
-                          r={isRoot ? 35 : isBranch ? 28 : 22}
-                          fill="var(--bg-card)"
-                          stroke={isSelected ? "#FFD700" : isRoot ? "#EA580C" : "rgba(245, 194, 66, 0.4)"}
-                          strokeWidth={isSelected ? 3 : 2}
-                          className="transition-all duration-300 group-hover:stroke-[#FFD700]"
-                          style={{
-                            filter: isSelected ? "drop-shadow(0 0 12px rgba(255, 215, 0, 0.6))" : "none"
+                      <g key={node.id} transform={`translate(${node.x}, ${node.y})`}>
+                        <motion.g
+                          className="cursor-pointer group"
+                          onClick={() => {
+                            setSelectedTreeNode(isSelected ? null : node.id);
+                            playClick();
                           }}
-                        />
-                        {/* Animated Dash ring for selection */}
-                        {isSelected && (
-                          <circle
-                            cx="0"
-                            cy="0"
-                            r={isRoot ? 42 : isBranch ? 34 : 28}
-                            fill="none"
-                            stroke="#FFD700"
-                            strokeWidth="1.5"
-                            strokeDasharray="5,3"
-                            className="animate-spin"
-                            style={{ animationDuration: "12s" }}
-                          />
-                        )}
-                        {/* Emoji Symbol */}
-                        <text
-                          x="0"
-                          y="1"
-                          textAnchor="middle"
-                          dominantBaseline="central"
-                          style={{ fontSize: isRoot ? "20px" : isBranch ? "16px" : "12px" }}
+                          whileHover={{ scale: 1.08 }}
+                          whileTap={{ scale: 0.96 }}
                         >
-                          {node.icon}
-                        </text>
-                        {/* Title label underneath node */}
-                        <text
-                          x="0"
-                          y={isRoot ? 50 : isBranch ? 42 : 35}
-                          textAnchor="middle"
-                          fill="var(--text-primary)"
-                          className="font-serif text-[11px] font-extrabold select-none tracking-wide group-hover:fill-[#FFD700] transition-colors"
-                        >
-                          {currentLang === "HI" ? node.nameSanskrit : node.name}
-                        </text>
-                      </motion.g>
+                          {/* Custom SVG Leaf/Medallion/Lotus Render */}
+                          {isRoot ? (
+                            <>
+                              {/* Lotus petals back glow */}
+                              <g className="transition-all duration-300">
+                                <path d="M 0 -35 C 10 -25, 15 -10, 0 35 C -15 -10, -10 -25, 0 -35 Z" fill="none" stroke={isSelected ? "var(--accent-gold)" : "var(--accent-saffron)"} strokeWidth={isSelected ? 2.5 : 1.5} transform="rotate(0)" opacity="0.85" />
+                                <path d="M 0 -35 C 10 -25, 15 -10, 0 35 C -15 -10, -10 -25, 0 -35 Z" fill="none" stroke={isSelected ? "var(--accent-gold)" : "var(--accent-saffron)"} strokeWidth={isSelected ? 2.5 : 1.5} transform="rotate(45)" opacity="0.85" />
+                                <path d="M 0 -35 C 10 -25, 15 -10, 0 35 C -15 -10, -10 -25, 0 -35 Z" fill="none" stroke={isSelected ? "var(--accent-gold)" : "var(--accent-saffron)"} strokeWidth={isSelected ? 2.5 : 1.5} transform="rotate(90)" opacity="0.85" />
+                                <path d="M 0 -35 C 10 -25, 15 -10, 0 35 C -15 -10, -10 -25, 0 -35 Z" fill="none" stroke={isSelected ? "var(--accent-gold)" : "var(--accent-saffron)"} strokeWidth={isSelected ? 2.5 : 1.5} transform="rotate(135)" opacity="0.85" />
+                              </g>
+                              <circle
+                                cx="0"
+                                cy="0"
+                                r="28"
+                                fill="var(--bg-card)"
+                                stroke={isSelected ? "var(--accent-gold)" : "var(--accent-saffron)"}
+                                strokeWidth={isSelected ? 3.5 : 2}
+                                style={{
+                                  filter: isSelected ? "drop-shadow(0 0 15px rgba(245, 194, 66, 0.6))" : "none"
+                                }}
+                              />
+                            </>
+                          ) : isBranch ? (
+                            <rect
+                              x="-24"
+                              y="-24"
+                              width="48"
+                              height="48"
+                              rx="12"
+                              transform="rotate(45)"
+                              fill="var(--bg-card)"
+                              stroke={isSelected ? "var(--accent-gold)" : "var(--border-gold)"}
+                              strokeWidth={isSelected ? 3 : 2}
+                              style={{
+                                filter: isSelected ? "drop-shadow(0 0 12px rgba(245, 194, 66, 0.5))" : "none"
+                              }}
+                            />
+                          ) : (
+                            <path
+                              d="M 0 -22 C 12 -11, 16 5, 0 22 C -16 5, -12 -11, 0 -22 Z"
+                              fill="var(--bg-card)"
+                              stroke={isSelected ? "var(--accent-gold)" : "var(--border-gold)"}
+                              strokeWidth={isSelected ? 2.5 : 1.5}
+                              style={{
+                                filter: isSelected ? "drop-shadow(0 0 10px rgba(245, 194, 66, 0.4))" : "none"
+                              }}
+                            />
+                          )}
+
+                          {/* Animated Dash ring for selection */}
+                          {isSelected && (
+                            <circle
+                              cx="0"
+                              cy="0"
+                              r={isRoot ? 44 : isBranch ? 36 : 30}
+                              fill="none"
+                              stroke="var(--accent-gold)"
+                              strokeWidth="1.5"
+                              strokeDasharray="6,4"
+                              className="animate-spin"
+                              style={{ animationDuration: "12s" }}
+                            />
+                          )}
+                          {/* Emoji Symbol */}
+                          <text
+                            x="0"
+                            y="1"
+                            textAnchor="middle"
+                            dominantBaseline="central"
+                            style={{ fontSize: isRoot ? "20px" : isBranch ? "16px" : "12px" }}
+                          >
+                            {node.icon}
+                          </text>
+                          {/* Title label underneath node */}
+                          <text
+                            x="0"
+                            y={isRoot ? 50 : isBranch ? 42 : 35}
+                            textAnchor="middle"
+                            fill="var(--text-primary)"
+                            className="font-serif text-[11px] font-extrabold select-none tracking-wide group-hover:fill-gold transition-colors"
+                          >
+                            {currentLang === "HI" ? node.nameSanskrit : node.name}
+                          </text>
+                        </motion.g>
+                      </g>
                     );
                   })}
                 </svg>
@@ -2089,7 +2752,7 @@ export default function Home() {
             </div>
 
             {/* Glassmorphic Info Box for Selected Node */}
-            <div className="w-full max-w-2xl min-h-[120px] transition-all duration-500">
+            <div className="w-full max-w-4xl min-h-[160px] transition-all duration-500">
               {selectedTreeNode ? (
                 (() => {
                   const node = TREE_NODES.find(n => n.id === selectedTreeNode);
@@ -2098,7 +2761,7 @@ export default function Home() {
                     <motion.div
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="ag-glass-premium p-6 border border-[#FFD700]/30 shadow-2xl relative select-text"
+                      className="ag-glass-premium p-6 md:p-8 border border-[var(--border-gold)]/40 shadow-2xl relative select-text"
                     >
                       <button
                         onClick={(e) => {
@@ -2106,29 +2769,84 @@ export default function Home() {
                           setSelectedTreeNode(null);
                           playClick();
                         }}
-                        className="absolute top-4 right-4 text-text-muted hover:text-white transition-colors cursor-pointer text-xs"
+                        className="absolute top-4 right-4 text-text-muted hover:text-text-main transition-colors cursor-pointer text-sm font-semibold"
                       >
                         ✕ Close
                       </button>
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="text-2xl">{node.icon}</span>
-                        <div>
-                          <h3 className="text-white font-serif font-bold text-lg leading-tight">
-                            {node.name}
-                          </h3>
-                          <span className="font-sanskrit text-[#FFD700] text-sm font-semibold">
-                            {node.nameSanskrit}
-                          </span>
+
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                        {/* Left Column: Customized Illustration */}
+                        <div className="md:col-span-4 flex justify-center">
+                          <div className="relative w-full aspect-[4/3] max-w-[260px] rounded-xl overflow-hidden border border-[var(--border-gold)]/50 shadow-[0_8px_25px_rgba(0,0,0,0.25)] group">
+                            <img
+                              src={node.image}
+                              alt={node.name}
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                          </div>
+                        </div>
+
+                        {/* Right Column: Node Details */}
+                        <div className="md:col-span-8 flex flex-col justify-center">
+                          <div className="flex items-center gap-3 mb-2 flex-wrap">
+                            <span className="text-2xl">{node.icon}</span>
+                            <div>
+                              <h3 className="text-text-main font-serif font-bold text-xl leading-tight">
+                                {node.name}
+                              </h3>
+                              <span className="font-sanskrit text-gold text-sm font-bold">
+                                {node.nameSanskrit}
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-gold uppercase tracking-wider font-mono font-bold bg-gold/10 px-2 py-0.5 rounded border border-gold/30 ml-auto md:ml-0">
+                              {node.type === "root" ? (currentLang === "HI" ? "मूलम्" : "Root") : node.type === "branch" ? (currentLang === "HI" ? "शाखा" : "Branch") : (currentLang === "HI" ? "पत्रम्" : "Leaf")}
+                            </span>
+                          </div>
+
+                          {node.quote && (
+                            <div className="border-l-2 border-gold/45 pl-4 py-1.5 my-3 bg-gold/5 rounded-r">
+                              <p className="font-sanskrit text-gold text-phi-sm leading-relaxed font-bold">
+                                {node.quote}
+                              </p>
+                              {node.quoteTranslation && (
+                                <p className="text-[11px] text-text-muted italic leading-normal mt-0.5">
+                                  &ldquo;{node.quoteTranslation}&rdquo;
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          <p className="text-phi-sm text-text-muted leading-relaxed mt-2">
+                            {node.description}
+                          </p>
+
+                          {/* Quick Navigation Action Button */}
+                          <div className="mt-4 flex gap-3">
+                            <a
+                              href={`#${node.id === "sanatan" ? "creation" : node.id === "buddhism" ? "living" : node.id === "sikhism" ? "living" : node.id}`}
+                              onClick={(e) => {
+                                const targetId = node.id === "sanatan" ? "creation" : node.id === "buddhism" ? "living" : node.id === "sikhism" ? "living" : node.id;
+                                const element = document.getElementById(targetId);
+                                if (element) {
+                                  e.preventDefault();
+                                  element.scrollIntoView({ behavior: "smooth" });
+                                  playClick();
+                                }
+                              }}
+                              className="inline-flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-gold hover:text-saffron transition-colors cursor-pointer no-underline border-b border-dashed border-gold hover:border-saffron pb-0.5"
+                            >
+                              Explore Section &rarr;
+                            </a>
+                          </div>
                         </div>
                       </div>
-                      <p className="text-phi-sm text-text-muted leading-relaxed">
-                        {node.description}
-                      </p>
+
                     </motion.div>
                   );
                 })()
               ) : (
-                <div className="border border-dashed border-[#B8860B20] bg-transparent rounded-2xl p-6 flex items-center justify-center text-center">
+                <div className="border border-dashed border-[var(--border-gold)]/40 bg-transparent rounded-2xl p-6 flex items-center justify-center text-center">
                   <p className="text-phi-sm text-text-muted">
                     * Interactive cosmic mapping: Click any node of the Dharma Tree above to reveal seers&apos; lineages and sacred teachings.
                   </p>
@@ -2145,7 +2863,7 @@ export default function Home() {
         id="living"
         className="w-full py-phi-3xl md:py-phi-4xl px-phi-lg border-t border-[var(--border-color)] bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "linear-gradient(to bottom, rgba(3, 1, 7, 0.86) 0%, rgba(3, 1, 7, 0.86) 100%), url('/images/hero-curtain-alt.jpg')",
+          backgroundImage: "var(--section-bg-blend)",
         }}
       >
         <div className="w-full max-w-7xl mx-auto flex flex-col gap-phi-xl md:gap-phi-2xl">
@@ -2197,7 +2915,7 @@ export default function Home() {
         id="downloads"
         className="w-full py-phi-3xl md:py-phi-4xl px-phi-lg border-t border-[var(--border-color)] bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "linear-gradient(to bottom, rgba(3, 1, 7, 0.86) 0%, rgba(3, 1, 7, 0.86) 100%), url('/images/hero-curtain-alt.jpg')",
+          backgroundImage: "var(--section-bg-blend)",
         }}
       >
         <div className="w-full max-w-7xl mx-auto bg-gradient-to-r from-section-alt via-card-bg to-section-alt border border-[var(--border-color)] rounded-2xl p-phi-xl md:p-phi-2xl text-center flex flex-col items-center gap-phi-lg">
@@ -2232,7 +2950,7 @@ export default function Home() {
         id="shloka"
         className="w-full py-phi-3xl md:py-phi-4xl px-phi-lg border-t border-[var(--border-color)] bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "linear-gradient(to bottom, rgba(3, 1, 7, 0.86) 0%, rgba(3, 1, 7, 0.86) 100%), url('/images/hero-curtain-alt.jpg')",
+          backgroundImage: "var(--section-bg-blend)",
         }}
       >
         <div className="w-full max-w-7xl mx-auto px-phi-lg text-center flex flex-col items-center">
@@ -2263,7 +2981,7 @@ export default function Home() {
             </p>
 
             <p className="text-phi-sm md:text-phi-base text-text-muted leading-relaxed max-w-2xl px-phi-lg w-full">
-              <span className="font-bold text-[#FFD700] mr-phi-sm">English:</span>
+              <span className="font-bold text-gold mr-phi-sm">English:</span>
               {verse.english}
             </p>
 
@@ -2283,7 +3001,7 @@ export default function Home() {
 
             <button 
               onClick={handleShareShloka}
-              className="flex items-center gap-phi-sm px-phi-md py-phi-sm rounded border border-[#B8860B50] text-[#9CA3AF] hover:text-white text-phi-xs uppercase tracking-wider bg-[#0F0F14] hover:bg-[#B8860B10] transition-colors cursor-pointer"
+              className="flex items-center gap-phi-sm px-phi-md py-phi-sm rounded border border-[var(--border-color)] text-text-muted hover:text-text-main text-phi-xs uppercase tracking-wider bg-card-bg hover:bg-section-alt transition-colors cursor-pointer"
             >
               <Share2 className="w-4 h-4" />
               <span>Share</span>
@@ -2291,7 +3009,7 @@ export default function Home() {
 
             <button 
               onClick={handleCopyShloka}
-              className="flex items-center gap-phi-sm px-phi-md py-phi-sm rounded border border-[#B8860B50] text-[#9CA3AF] hover:text-white text-phi-xs uppercase tracking-wider bg-[#0F0F14] hover:bg-[#B8860B10] transition-colors min-w-[90px] cursor-pointer"
+              className="flex items-center gap-phi-sm px-phi-md py-phi-sm rounded border border-[var(--border-color)] text-text-muted hover:text-text-main text-phi-xs uppercase tracking-wider bg-card-bg hover:bg-section-alt transition-colors min-w-[90px] cursor-pointer"
             >
               {copied ? (
                 <>

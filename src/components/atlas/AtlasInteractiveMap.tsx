@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Compass, MapPin, ZoomIn, ZoomOut, RotateCcw, Image, Navigation, ArrowRight, Eye, Grid } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Compass, MapPin, Navigation, ArrowRight, Eye, Search, Locate, ShieldAlert } from "lucide-react";
 import { useSacredSound } from "@/lib/sacred-audio";
 
 interface SacredPlace {
@@ -40,90 +39,86 @@ export default function AtlasInteractiveMap({
   activeRoute
 }: AtlasInteractiveMapProps) {
   const { playClick, playSuccess } = useSacredSound();
-  const [mapType, setMapType] = useState<"cartography" | "satellite">("cartography");
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [hoveredPlace, setHoveredPlace] = useState<SacredPlace | null>(null);
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Geolocation & Map settings
+  const [userCoords, setUserCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [geoLoading, setGeoLoading] = useState(true);
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const [mapMode, setMapMode] = useState<"temple" | "nearby">("temple");
+  const [viewStyle, setViewStyle] = useState<"dark" | "satellite">("dark");
 
-  // Reset zoom & pan when filter or route changes (during render to avoid cascading updates)
-  const [prevFilter, setPrevFilter] = useState(activeFilter);
-  const [prevRoute, setPrevRoute] = useState(activeRoute);
-
-  if (activeFilter !== prevFilter || activeRoute !== prevRoute) {
-    setPrevFilter(activeFilter);
-    setPrevRoute(activeRoute);
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
-  }
-
-  const handleZoomIn = () => {
-    playClick();
-    setZoom((z) => Math.min(z + 0.5, 3));
-  };
-
-  const handleZoomOut = () => {
-    playClick();
-    setZoom((z) => Math.max(z - 0.5, 1));
-  };
-
-  const handleReset = () => {
-    playClick();
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
-  };
-
-  // Dragging to Pan (Artistic Cartography View)
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (mapType !== "cartography") return;
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || mapType !== "cartography") return;
-    setPan({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y
-    });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  // Convert lat/lng to percentage coordinates on map projection
-  const getCoordinates = (lat: number, lng: number) => {
-    // Normalizing coordinates for projection inside India bounding box
-    // West: ~68°E, East: ~97°E, South: ~8°N, North: ~37°N
-    const minLng = 68.0;
-    const maxLng = 97.5;
-    const minLat = 7.5;
-    const maxLat = 37.0;
-
-    const x = ((lng - minLng) / (maxLng - minLng)) * 80 + 10; // offset boundaries
-    const y = 90 - ((lat - minLat) / (maxLat - minLat)) * 80;
-    return { x: `${x}%`, y: `${y}%` };
-  };
-
-  const getMarkerColor = (type: string) => {
-    switch (type.toUpperCase()) {
-      case "JYOTIRLINGA":
-        return "#FF8C00"; // Saffron
-      case "CHAR_DHAM":
-        return "#FFD700"; // Gold
-      case "SHAKTI_PEETHA":
-        return "#D32F2F"; // Crimson Red
-      case "DIVYA_DESAM":
-        return "#2563EB"; // Royal Blue
-      default:
-        return "#D4AF37";
+  // Track browser geolocation on mount
+  useEffect(() => {
+    if (typeof window !== "undefined" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserCoords({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+          setGeoLoading(false);
+        },
+        (error) => {
+          console.warn("Geolocation prompt skipped/denied:", error);
+          setGeoError(error.message);
+          setGeoLoading(false);
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    } else {
+      setTimeout(() => setGeoLoading(false), 0);
     }
+  }, []);
+
+  // Distance calculator (Haversine formula)
+  const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // radius of Earth in km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   };
 
+  // Compute and sort places based on user coordinates proximity
+  const sortedPlaces = useMemo(() => {
+    const visible = places.filter((p) => {
+      const mappedType = activeFilter === "all" ? "all" : activeFilter.toUpperCase().replace(" ", "_");
+      const matchesCategory = mappedType === "all" || p.type === mappedType;
+
+      let matchesRoute = true;
+      if (activeRoute === "char_dham") {
+        matchesRoute = ["badrinath", "jagannath-puri", "rameshwaram", "dwarkadhish"].includes(p.slug);
+      } else if (activeRoute === "jyotirlinga") {
+        matchesRoute = p.type === "JYOTIRLINGA";
+      }
+      return matchesCategory && matchesRoute;
+    });
+
+    if (!userCoords) {
+      return visible.map((p) => ({ ...p, distance: null }));
+    }
+
+    return visible
+      .map((p) => {
+        const dist = getDistance(userCoords.latitude, userCoords.longitude, p.latitude, p.longitude);
+        return { ...p, distance: dist };
+      })
+      .sort((a, b) => (a.distance || 0) - (b.distance || 0));
+  }, [places, userCoords, activeFilter, activeRoute]);
+
+  // Distance from user to selected temple
+  const distanceToSelected = useMemo(() => {
+    if (!userCoords || !selectedPlace) return null;
+    return getDistance(userCoords.latitude, userCoords.longitude, selectedPlace.latitude, selectedPlace.longitude);
+  }, [userCoords, selectedPlace]);
+
+  // Image list extraction helper
   const getTempleImagesList = (jsonStr: string): string[] => {
     try {
       const parsed = JSON.parse(jsonStr);
@@ -132,354 +127,247 @@ export default function AtlasInteractiveMap({
     return ["/images/hero-temple-sanctum.png"];
   };
 
-  // Find active route nodes for rendering path lines
-  const getRouteCoordinatesList = () => {
-    if (!activeRoute) return [];
-
-    let routeKeys: string[] = [];
-    if (activeRoute === "char_dham") {
-      routeKeys = ["badrinath", "jagannath-puri", "rameshwaram", "dwarkadhish"];
-    } else if (activeRoute === "jyotirlinga") {
-      routeKeys = [
-        "somnath", "mallikarjuna", "mahakaleshwar", "omkareshwar", "kedarnath",
-        "bhimashankar", "kashi-vishwanath", "trimbakeshwar", "vaidyanath",
-        "nageshwar", "rameshwaram", "grishneshwar"
-      ];
-    } else {
-      return [];
+  // Dynamic Map URLs
+  const mapIframeUrl = useMemo(() => {
+    if (mapMode === "nearby" && userCoords) {
+      const suffix = viewStyle === "satellite" ? "&t=k" : "";
+      return `https://maps.google.com/maps?q=hindu+temple+near+${userCoords.latitude},${userCoords.longitude}&z=12&output=embed${suffix}`;
     }
-
-    const coords = routeKeys
-      .map((slug) => places.find((p) => p.slug === slug))
-      .filter((p): p is SacredPlace => !!p)
-      .map((p) => {
-        const xy = getCoordinates(p.latitude, p.longitude);
-        return { name: p.name, x: xy.x, y: xy.y };
-      });
-
-    // Close the loop for Char Dham
-    if (activeRoute === "char_dham" && coords.length > 0) {
-      coords.push(coords[0]);
+    if (selectedPlace) {
+      const suffix = viewStyle === "satellite" ? "&t=k" : "";
+      return `https://maps.google.com/maps?q=${selectedPlace.latitude},${selectedPlace.longitude}&z=14&output=embed${suffix}`;
     }
-    return coords;
-  };
-
-  const routeCoords = getRouteCoordinatesList();
+    return "";
+  }, [mapMode, selectedPlace, userCoords, viewStyle]);
 
   return (
-    <div className="w-full flex flex-col gap-4">
-      {/* Map Header Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#D4AF37]/15 pb-4">
-        {/* Toggle Toggles */}
-        <div className="flex bg-[#0A0614] border border-[#D4AF37]/25 rounded-lg p-0.5 z-10">
-          <button
-            onClick={() => { playClick(); setMapType("cartography"); }}
-            className={`px-3 py-1.5 rounded text-[10px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5
-              ${mapType === "cartography" ? "bg-[#D4AF37]/15 text-[#FFD700]" : "text-gray-400 hover:text-white"}`}
-          >
-            <Compass className="w-3.5 h-3.5" />
-            <span>Sacred Cartography</span>
-          </button>
-          <button
-            onClick={() => { 
-              playClick(); 
-              setMapType("satellite");
-              if (!selectedPlace && places.length > 0) {
-                onPlaceSelect(places[0]);
-              }
-            }}
-            className={`px-3 py-1.5 rounded text-[10px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5
-              ${mapType === "satellite" ? "bg-[#D4AF37]/15 text-[#FFD700]" : "text-gray-400 hover:text-white"}`}
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Google Satellite view</span>
-          </button>
-        </div>
-
-        {/* Zoom Controls (only for SVG cartography) */}
-        {mapType === "cartography" && (
-          <div className="flex items-center gap-1.5 bg-[#0A0614] border border-[#D4AF37]/25 rounded-lg p-0.5 z-10">
-            <button
-              onClick={handleZoomIn}
-              className="p-1.5 rounded hover:bg-white/5 text-[#FFD700] hover:text-white cursor-pointer"
-              title="Zoom In"
-            >
-              <ZoomIn className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleZoomOut}
-              className="p-1.5 rounded hover:bg-white/5 text-[#FFD700] hover:text-white cursor-pointer"
-              title="Zoom Out"
-            >
-              <ZoomOut className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleReset}
-              className="p-1.5 rounded hover:bg-white/5 text-[#FFD700] hover:text-white cursor-pointer"
-              title="Reset View"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        {/* Map Viewport Area */}
-        <div className="lg:col-span-8 bg-[#030107]/80 border border-[#D4AF37]/35 rounded-2xl relative overflow-hidden h-[500px] flex items-center justify-center">
-          
-          {mapType === "cartography" ? (
-            /* Cartography View (SVG) */
-            <div
-              ref={containerRef}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              className={`w-full h-full relative cursor-grab active:cursor-grabbing select-none transition-shadow`}
-            >
-              {/* Starry Night Sky and grid overlay */}
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(15,8,25,0.4)_0%,rgba(0,0,0,0.85)_100%)] pointer-events-none" />
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(212,175,55,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(212,175,55,0.015)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
-
-              {/* Map Contents Container (Handles Zoom / Pan) */}
-              <div
-                style={{
-                  transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
-                  transformOrigin: "center center",
-                  transition: isDragging ? "none" : "transform 0.2s ease"
-                }}
-                className="w-full h-full absolute inset-0 flex items-center justify-center"
-              >
-                {/* SVG Outline representation of India */}
-                <svg
-                  className="w-full max-w-[420px] h-[450px] text-[#D4AF37]/5 filter drop-shadow-[0_0_15px_rgba(212,175,55,0.08)]"
-                  viewBox="0 0 200 240"
-                  fill="currentColor"
-                >
-                  <path d="M100 10 L115 15 L125 30 L115 50 L125 60 L140 65 L155 80 L170 95 L180 110 L190 125 L160 130 L150 145 L130 150 L120 160 L110 180 L105 200 L100 230 L95 200 L90 180 L80 160 L70 150 L50 145 L40 130 L10 125 L20 110 L30 95 L45 80 L60 65 L75 60 L85 50 L75 30 L85 15 Z" />
-                </svg>
-
-                {/* Draw Route Connection Lines */}
-                {activeRoute && routeCoords.length > 1 && (
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
-                    <style>{`
-                      @keyframes dash {
-                        to {
-                          stroke-dashoffset: -80;
-                        }
-                      }
-                      .sacred-path-line {
-                        animation: dash 3.5s linear infinite;
-                      }
-                    `}</style>
-                    {routeCoords.map((coord, idx) => {
-                      if (idx === routeCoords.length - 1 && activeRoute !== "char_dham") return null;
-                      const next = routeCoords[(idx + 1) % routeCoords.length];
-                      return (
-                        <line
-                          key={idx}
-                          x1={coord.x}
-                          y1={coord.y}
-                          x2={next.x}
-                          y2={next.y}
-                          stroke="#FFD700"
-                          strokeWidth="1.5"
-                          strokeDasharray="8,6"
-                          className="sacred-path-line"
-                          opacity="0.85"
-                          style={{ filter: "drop-shadow(0 0 4px #FFD700)" }}
-                        />
-                      );
-                    })}
-                  </svg>
-                )}
-
-                {/* Hotspot Markers */}
-                {places.map((place) => {
-                  const isSelected = selectedPlace?.id === place.id;
-                  const isHovered = hoveredPlace?.id === place.id;
-                  const isVisible = activeFilter === "all" || place.type === activeFilter.toUpperCase().replace(" ", "_");
-                  
-                  // Check if matching active route nodes
-                  let isRouteNode = true;
-                  if (activeRoute === "char_dham") {
-                    isRouteNode = ["badrinath", "jagannath-puri", "rameshwaram", "dwarkadhish"].includes(place.slug);
-                  } else if (activeRoute === "jyotirlinga") {
-                    isRouteNode = place.type === "JYOTIRLINGA";
-                  }
-
-                  const showMarker = isVisible && isRouteNode;
-                  const color = getMarkerColor(place.type);
-                  const { x, y } = getCoordinates(place.latitude, place.longitude);
-
-                  return (
-                    <div
-                      key={place.id}
-                      className={`absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 z-20 transition-all duration-500
-                        ${showMarker ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-50 pointer-events-none"}`}
-                      style={{ left: x, top: y }}
-                    >
-                      {/* Glow rings */}
-                      {(isSelected || isHovered) && (
-                        <span
-                          className="absolute -inset-3.5 rounded-full animate-ping opacity-60"
-                          style={{ backgroundColor: `${color}35` }}
-                        />
-                      )}
-                      <span
-                        className="absolute -inset-1.5 rounded-full hover:animate-pulse"
-                        style={{ backgroundColor: `${color}20` }}
-                      />
-
-                      {/* Hotspot Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          playSuccess();
-                          onPlaceSelect(place);
-                        }}
-                        onMouseEnter={() => setHoveredPlace(place)}
-                        onMouseLeave={() => setHoveredPlace(null)}
-                        className="w-full h-full rounded-full border border-black shadow-[0_0_12px_rgba(0,0,0,0.8)] cursor-pointer outline-none transition-transform duration-300 hover:scale-125"
-                        style={{
-                          backgroundColor: color,
-                          boxShadow: `0 0 10px ${color}`
-                        }}
-                        aria-label={place.name}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Drag instruction overlay */}
-              {zoom > 1 && (
-                <div className="absolute bottom-4 left-4 bg-black/60 border border-[#D4AF37]/25 px-2.5 py-1 rounded text-[9px] text-gray-400 font-mono pointer-events-none uppercase">
-                  Drag with mouse to pan
-                </div>
-              )}
-            </div>
-          ) : (
-            /* Satellite View (Google Maps Integration) */
-            <div className="w-full h-full relative p-1">
-              {selectedPlace ? (
-                <iframe
-                  title={`${selectedPlace.name} Google Map Location`}
-                  className="w-full h-full rounded-2xl border border-[var(--border-gold)]/20"
-                  src={`https://maps.google.com/maps?q=${selectedPlace.latitude},${selectedPlace.longitude}&t=k&z=15&output=embed`}
-                  allowFullScreen
-                  loading="lazy"
-                />
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-center text-gray-500 font-mono text-phi-xs p-6">
-                  Select a sacred place on the map to inspect its real satellite coordinates.
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Floating Image Preview on Hover */}
-          <AnimatePresence>
-            {hoveredPlace && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-[#0A0614]/95 border border-[#D4AF37]/50 rounded-xl p-3 shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-35 flex items-center gap-3 w-72 pointer-events-none"
-              >
-                <div
-                  className="w-14 h-14 rounded-lg bg-cover bg-center bg-no-repeat border border-[#D4AF37]/35 flex-shrink-0"
-                  style={{ backgroundImage: `url(${getTempleImagesList(hoveredPlace.images)[0]})` }}
-                />
-                <div className="flex-1 text-left min-w-0">
-                  <span
-                    className="text-[8px] uppercase tracking-widest font-mono font-bold block"
-                    style={{ color: getMarkerColor(hoveredPlace.type) }}
-                  >
-                    {hoveredPlace.type.replace("_", " ")}
-                  </span>
-                  <h5 className="text-white text-xs font-bold truncate mt-0.5 font-serif">
-                    {hoveredPlace.name}
-                  </h5>
-                  <div className="flex items-center gap-1 text-[9px] text-gray-400 mt-1">
-                    <MapPin className="w-3 h-3 text-[#FF8C00]" />
-                    <span className="truncate">{hoveredPlace.state}</span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Selected Sanctuary Details Sidebar */}
-        <div className="lg:col-span-4 bg-[#0A0614]/80 border border-[#D4AF37]/35 rounded-2xl p-6 flex flex-col justify-between backdrop-blur-md min-h-[500px]">
+    <div className="w-full flex flex-col gap-6 select-none">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+        
+        {/* LEFT COLUMN: Premium Editorial Info Panel (Col-span 5) */}
+        <div className="lg:col-span-5 bg-gradient-to-b from-[#0e0717]/85 to-[#040206]/95 border border-[#A5824B]/35 rounded-3xl p-6 md:p-8 flex flex-col justify-between backdrop-blur-md shadow-[0_20px_50px_rgba(0,0,0,0.85)] min-h-[520px]">
           {selectedPlace ? (
-            <div className="flex flex-col gap-4 text-left h-full justify-between select-text">
+            <div className="flex flex-col gap-4 text-left h-full justify-between select-text relative">
               <div className="space-y-4">
-                {/* Image block */}
-                <div className="relative w-full h-32 rounded-xl overflow-hidden border border-[#D4AF37]/20 flex-shrink-0">
-                  <div
-                    className="w-full h-full bg-cover bg-center bg-no-repeat transition-transform duration-500 hover:scale-105"
-                    style={{ backgroundImage: `url(${getTempleImagesList(selectedPlace.images)[0]})` }}
-                  />
-                  <div className="absolute top-2 right-2 bg-black/60 border border-[#D4AF37]/30 px-2 py-0.5 rounded-full text-[8px] uppercase tracking-widest font-mono font-bold text-[#FFD700]">
+                
+                {/* Visual Category Label */}
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] text-[#A5824B] uppercase tracking-[0.25em] font-extrabold block">
                     {selectedPlace.type.replace("_", " ")}
-                  </div>
+                  </span>
+                  
+                  {userCoords && distanceToSelected !== null && (
+                    <span className="text-[9px] bg-[#FF8C00]/15 px-2.5 py-0.5 rounded border border-[#FF8C00]/30 font-mono text-[#FF8C00] font-bold flex items-center gap-1">
+                      <Locate className="w-3 h-3 text-[#FF8C00] animate-pulse" />
+                      <span>{distanceToSelected.toFixed(1)} km away</span>
+                    </span>
+                  )}
                 </div>
 
+                {/* Main Titles */}
                 <div>
-                  <span className="font-sanskrit text-lg text-[#FFD700] block tracking-wide">
+                  <span className="font-serif italic text-2xl text-[#FFE485]/80 block mb-1">
                     {selectedPlace.nameSanskrit}
                   </span>
-                  <h3 className="font-serif text-xl font-bold text-white mt-0.5 leading-snug">
-                    {selectedPlace.name}
-                  </h3>
-                  <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
-                    <MapPin className="w-3.5 h-3.5 text-[#FF8C00]" />
-                    <span>{selectedPlace.state}, Bharat</span>
-                  </div>
+                  <h2 className="font-serif text-4xl sm:text-5xl font-black text-white leading-tight uppercase tracking-wider">
+                    {selectedPlace.name}.
+                  </h2>
+                  <span className="text-[9px] uppercase tracking-widest text-[#A5824B] font-black block mt-2">
+                    &#9679; {selectedPlace.state.toUpperCase()}, BHARAT
+                  </span>
                 </div>
 
-                <div className="w-full h-[1px] bg-[#D4AF37]/15" />
+                {/* Editorial Thin Divider Line */}
+                <div className="h-[1px] w-24 bg-gradient-to-r from-[#A5824B]/60 to-transparent my-6" />
 
-                <div className="space-y-2 text-xs text-gray-300 leading-relaxed line-clamp-4">
-                  <strong>Lore:</strong> {selectedPlace.description}
+                {/* Lore descriptions */}
+                <div className="space-y-3">
+                  <p className="text-xs md:text-sm text-slate-300 leading-relaxed font-sans">
+                    {selectedPlace.description}
+                  </p>
+                  <p className="text-xs text-slate-400 leading-relaxed font-serif italic border-l border-[#A5824B]/35 pl-4">
+                    {selectedPlace.significance}
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 border-t border-[#D4AF37]/15 pt-3 text-[10px] text-gray-400">
+                {/* Details Meta Grid */}
+                <div className="grid grid-cols-2 gap-4 border-t border-[#A5824B]/15 pt-4 text-xs">
                   <div>
-                    <span className="block font-mono text-[8px] uppercase text-gray-500">Deity Worshipped</span>
+                    <span className="block font-mono text-[8px] uppercase text-gray-500">Main Deity</span>
                     <span className="font-bold text-white mt-0.5 block">{selectedPlace.mainDeity}</span>
                   </div>
                   <div>
                     <span className="block font-mono text-[8px] uppercase text-gray-500">Coordinates</span>
-                    <span className="font-mono font-bold text-[#FFD700] mt-0.5 block">
+                    <span className="font-mono font-bold text-[#FFE485] mt-0.5 block">
                       {selectedPlace.latitude.toFixed(4)}°N, {selectedPlace.longitude.toFixed(4)}°E
                     </span>
                   </div>
                 </div>
+
               </div>
 
-              <div className="pt-4 mt-auto">
-                <Link
-                  href={`/temples/${selectedPlace.slug}`}
-                  onClick={playClick}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 bg-gradient-to-r from-[#D4A017] to-[#B8860B] hover:from-[#FFD700] hover:to-[#D4A017] text-black font-extrabold text-[11px] uppercase tracking-wider rounded-xl shadow-lg hover:shadow-[#D4A01720] transition-all transform hover:-translate-y-0.5 cursor-pointer no-underline select-none"
+              {/* Navigation Directions Link */}
+              <div className="pt-6 border-t border-[#A5824B]/15 mt-6 flex flex-col sm:flex-row gap-3">
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${selectedPlace.latitude},${selectedPlace.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-[#D4A017] to-[#B8860B] hover:from-[#FFD700] hover:to-[#D4A017] text-black font-extrabold text-[10px] uppercase tracking-wider rounded-full shadow-lg hover:shadow-[0_8px_20px_rgba(212,160,23,0.3)] transition-all transform hover:-translate-y-0.5 cursor-pointer no-underline select-none"
                 >
                   <Navigation className="w-3.5 h-3.5" />
-                  <span>Enter Sanctuary</span>
+                  <span>Visit Sanctuary (Directions)</span>
                   <ArrowRight className="w-3.5 h-3.5" />
+                </a>
+
+                <Link
+                  href={`/temples/${selectedPlace.slug}`}
+                  className="flex items-center justify-center gap-1 px-4 py-3 border border-[#A5824B]/40 hover:border-[#FFE485] text-slate-300 hover:text-white font-bold text-[10px] uppercase tracking-wider rounded-full transition-all no-underline select-none bg-white/5"
+                >
+                  <span>Read Scripture</span>
                 </Link>
               </div>
+
+              {/* Seekers telemetry footer */}
+              <div className="mt-6 pt-4 border-t border-[#A5824B]/10 flex items-center gap-3 text-slate-500 select-none">
+                <div className="flex -space-x-2">
+                  <div className="w-6 h-6 rounded-full border border-black bg-slate-800 flex items-center justify-center text-[7px] text-[#FFE485] font-bold">ॐ</div>
+                  <div className="w-6 h-6 rounded-full border border-black bg-slate-700 flex items-center justify-center text-[7px] text-[#FFE485] font-bold">🛕</div>
+                  <div className="w-6 h-6 rounded-full border border-black bg-slate-600 flex items-center justify-center text-[7px] text-[#FFE485] font-bold">🧘</div>
+                </div>
+                <span className="text-[9px] font-mono uppercase tracking-wider">10k+ pilgrims traveled here recently</span>
+              </div>
+
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center text-gray-500 font-mono text-phi-xs py-12">
-              <Compass className="w-10 h-10 text-[#D4AF37]/25 animate-spin-slow mb-4" />
+            <div className="h-full flex flex-col items-center justify-center text-center text-gray-500 font-mono text-xs py-12">
+              <Compass className="w-10 h-10 text-[#A5824B]/25 animate-spin-slow mb-4" />
               <span>Select coordinates marker on map to view details.</span>
             </div>
           )}
         </div>
+
+        {/* RIGHT COLUMN: Premium Google Map Pane (Col-span 7) */}
+        <div className="lg:col-span-7 bg-[#030107]/85 border border-[#A5824B]/35 rounded-3xl relative overflow-hidden h-[520px] shadow-[0_20px_50px_rgba(0,0,0,0.85)] flex flex-col justify-between">
+          
+          {/* Header Map Toolbar */}
+          <div className="relative z-20 flex flex-wrap items-center justify-between gap-4 p-4 border-b border-[#A5824B]/15 bg-black/60 backdrop-blur-md">
+            
+            {/* Map Mode Tabs */}
+            <div className="flex bg-[#0A0614] border border-[#A5824B]/25 rounded-xl p-0.5">
+              <button
+                onClick={() => { playClick(); setMapMode("temple"); }}
+                className={`px-3.5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5
+                  ${mapMode === "temple" ? "bg-[#A5824B]/15 text-[#FFE485]" : "text-gray-400 hover:text-white"}`}
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                <span>Selected Sanctuary</span>
+              </button>
+              
+              <button
+                onClick={() => { 
+                  if (userCoords) {
+                    playClick(); 
+                    setMapMode("nearby"); 
+                    if (sortedPlaces.length > 0) {
+                      onPlaceSelect(sortedPlaces[0]);
+                    }
+                  }
+                }}
+                disabled={!userCoords}
+                className={`px-3.5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5
+                  ${!userCoords ? "opacity-35 cursor-not-allowed text-gray-600" : ""}
+                  ${mapMode === "nearby" ? "bg-[#A5824B]/15 text-[#FFE485]" : "text-gray-400 hover:text-white"}`}
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span>Nearby Temples Search</span>
+              </button>
+            </div>
+
+            {/* Satellite vs Sepia Dark Toggles */}
+            <div className="flex bg-[#0A0614] border border-[#A5824B]/25 rounded-xl p-0.5">
+              <button
+                onClick={() => { playClick(); setViewStyle("dark"); }}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1
+                  ${viewStyle === "dark" ? "bg-[#A5824B]/15 text-[#FFE485]" : "text-gray-400 hover:text-white"}`}
+              >
+                <Compass className="w-3 h-3" />
+                <span>Dark Map</span>
+              </button>
+              <button
+                onClick={() => { playClick(); setViewStyle("satellite"); }}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1
+                  ${viewStyle === "satellite" ? "bg-[#A5824B]/15 text-[#FFE485]" : "text-gray-400 hover:text-white"}`}
+              >
+                <Eye className="w-3 h-3" />
+                <span>Satellite</span>
+              </button>
+            </div>
+
+          </div>
+
+          {/* Real Interactive Google Map frame */}
+          <div className="w-full h-full relative z-10 flex-grow">
+            {mapIframeUrl ? (
+              <iframe
+                title="Sacred Sanctuary Navigation Map"
+                className="w-full h-full border-0 transition-all duration-700"
+                src={mapIframeUrl}
+                allowFullScreen
+                loading="lazy"
+                style={{
+                  filter: viewStyle === "dark" 
+                    ? "invert(90%) hue-rotate(195deg) contrast(110%) brightness(95%) sepia(10%) saturate(120%)" 
+                    : "none"
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-center text-gray-500 font-mono text-xs p-6 bg-black/40">
+                <Compass className="w-10 h-10 text-[#A5824B]/25 animate-spin-slow mb-4" />
+                <span>Loading map frame coordinates...</span>
+              </div>
+            )}
+            
+            {/* Geolocation status warning banner */}
+            {!userCoords && !geoLoading && (
+              <div className="absolute top-4 left-4 right-4 bg-yellow-950/70 border border-yellow-800/40 rounded-xl p-2.5 backdrop-blur-md z-30 flex items-center gap-2 text-[10px] text-yellow-300">
+                <ShieldAlert className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
+                <span><strong>No Geolocation:</strong> Access denied or timed out. Enable browser location to list nearby temples and compute distances.</span>
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Navigation Pills: list of other temples (TravelPost reference style) */}
+          <div className="relative z-20 bg-[#0e0717]/85 border-t border-[#A5824B]/15 p-4 backdrop-blur-md flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-none py-1 flex-grow pr-4">
+              {sortedPlaces.slice(0, 10).map((p) => {
+                const isSelected = selectedPlace?.id === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => { playSuccess(); onPlaceSelect(p); }}
+                    className={`px-4 py-2 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer shrink-0 border
+                      ${isSelected 
+                        ? "bg-[#FFE485] border-[#FFE485] text-black shadow-md font-black" 
+                        : "bg-white/5 border-white/10 text-slate-300 hover:text-white hover:bg-white/10 hover:border-[#A5824B]/50"}`}
+                  >
+                    <span>{p.name}</span>
+                    {p.distance !== null && p.distance !== undefined && (
+                      <span className={`ml-1.5 text-[8.5px] ${isSelected ? "text-slate-800" : "text-[#FF8C00] font-black"}`}>
+                        ({p.distance.toFixed(0)} km)
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            
+            <span className="text-[8px] font-mono text-slate-500 uppercase tracking-widest shrink-0 hidden sm:block font-bold">
+              Trails list
+            </span>
+          </div>
+
+        </div>
+
       </div>
     </div>
   );

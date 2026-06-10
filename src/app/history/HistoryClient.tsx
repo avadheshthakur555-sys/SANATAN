@@ -839,7 +839,7 @@ export default function HistoryClient() {
       className="relative w-full min-h-screen text-[var(--text-primary)] overflow-x-hidden flex flex-col items-center pb-24"
     >
       {/* Background traditional Watermark Mandalas */}
-      <div className="absolute top-[8%] left-[-150px] w-[500px] h-[500px] opacity-[0.03] text-[#D4AF37] pointer-events-none z-0">
+      <div className="absolute top-[8%] left-[-150px] w-[500px] h-[500px] opacity-[0.03] text-[var(--accent-gold)] pointer-events-none z-0">
         <svg viewBox="0 0 100 100" className="w-full h-full fill-none stroke-current stroke-[0.3]">
           <circle cx="50" cy="50" r="45" />
           <circle cx="50" cy="50" r="38" strokeDasharray="3 2" />
@@ -850,7 +850,7 @@ export default function HistoryClient() {
         </svg>
       </div>
 
-      <div className="absolute bottom-[20%] right-[-150px] w-[600px] h-[600px] opacity-[0.03] text-[#D4AF37] pointer-events-none z-0">
+      <div className="absolute bottom-[20%] right-[-150px] w-[600px] h-[600px] opacity-[0.03] text-[var(--accent-gold)] pointer-events-none z-0">
         <svg viewBox="0 0 100 100" className="w-full h-full fill-none stroke-current stroke-[0.3] rotate-45">
           <circle cx="50" cy="50" r="45" />
           <circle cx="50" cy="50" r="35" />
@@ -861,38 +861,38 @@ export default function HistoryClient() {
       </div>
 
       {/* Elegant Side manuscript roll borders */}
-      <div className="hidden lg:block absolute inset-y-0 left-[2%] right-[2%] border-l border-r border-[#D4AF37]/15 pointer-events-none z-10" />
+      <div className="hidden lg:block absolute inset-y-0 left-[2%] right-[2%] border-l border-r border-[var(--border-gold)]/10 pointer-events-none z-10" />
 
       {/* Main Header */}
       <header className="relative z-10 max-w-4xl w-full text-center px-6 pt-20 pb-12 flex flex-col items-center gap-4">
-        <div className="flex items-center gap-2 border-b border-t border-[#D4AF37]/35 py-1.5 px-5 my-2">
-          <Compass className="w-4 h-4 text-[#D4AF37] animate-spin-slow" />
-          <span className="text-[10px] md:text-xs text-[#8D6E63] uppercase tracking-[0.25em] font-serif font-bold">
+        <div className="flex items-center gap-2 border-b border-t border-[var(--border-gold)]/40 py-1.5 px-5 my-2">
+          <Compass className="w-4 h-4 text-[var(--accent-gold)] animate-spin-slow" />
+          <span className="text-[10px] md:text-xs text-[var(--text-secondary)] uppercase tracking-[0.25em] font-serif font-bold">
             {labels.pilgrimageSubtitle}
           </span>
         </div>
         
-        <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-b from-[#8C2D19] to-[#3E2723] leading-tight drop-shadow-sm select-text">
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-b from-[var(--text-sanskrit)] to-[var(--text-primary)] leading-tight drop-shadow-sm select-text">
           {labels.pilgrimageTitle}
         </h1>
         
-        <p className="text-base md:text-xl text-[#8D6E63] font-serif italic max-w-3xl select-text leading-relaxed">
+        <p className="text-base md:text-xl text-[var(--text-secondary)] font-serif italic max-w-3xl select-text leading-relaxed">
           {labels.pilgrimageDesc}
         </p>
 
         <div className="w-64 h-5 flex items-center justify-center gap-1.5 opacity-65 my-3">
-          <div className="h-px w-28 bg-[#D4AF37]/50" />
-          <span className="text-xs text-[#D4AF37]">ॐ</span>
-          <div className="h-px w-28 bg-[#D4AF37]/50" />
+          <div className="h-px w-28 bg-[var(--accent-gold)]/50" />
+          <span className="text-xs text-[var(--accent-gold)]">ॐ</span>
+          <div className="h-px w-28 bg-[var(--accent-gold)]/50" />
         </div>
       </header>
 
       {/* Floating Sandalwood Journey Quick-Filter Select Menu */}
       <div className="sticky top-6 z-30 max-w-xs w-full px-4 mb-20">
-        <div className="bg-[#FAF7F0]/90 backdrop-blur-sm border border-[#D4AF37]/35 p-1 shadow-xl rounded">
+        <div className="bg-[var(--bg-card)] backdrop-blur-sm border border-[var(--border-gold)]/40 p-1 shadow-xl rounded">
           <button 
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="w-full py-2.5 px-3 flex items-center justify-between text-xs font-serif font-bold text-[#8C2D19] tracking-wide"
+            className="w-full py-2.5 px-3 flex items-center justify-between text-xs font-serif font-bold text-[var(--text-sanskrit)] tracking-wide"
           >
             <span className="flex items-center gap-2">
               <History className="w-3.5 h-3.5" />
@@ -902,16 +902,16 @@ export default function HistoryClient() {
           </button>
           
           {dropdownOpen && (
-            <div className="max-h-[300px] overflow-y-auto border-t border-[#D4AF37]/25 mt-1 divide-y divide-[#E4D5B7]/40 bg-[#FAF7F0]">
+            <div className="max-h-[300px] overflow-y-auto border-t border-[var(--border-gold)]/25 mt-1 divide-y divide-[var(--border-gold)]/40 bg-[var(--bg-secondary)]">
               {CHAPTERS.map((c) => (
                 <button
                   key={c.id}
                   onClick={() => scrollToSection(c.id)}
-                  className={`w-full text-left py-2 px-3 text-[11px] font-serif transition-colors hover:bg-[#EAE2CF]/30 flex items-center justify-between
-                    ${activeEra === c.id ? "text-[#8C2D19] font-bold bg-[#EAE2CF]/20" : "text-[#3E2723]/80"}`}
+                  className={`w-full text-left py-2 px-3 text-[11px] font-serif transition-colors hover:bg-[var(--border-gold)]/20 flex items-center justify-between
+                    ${activeEra === c.id ? "text-[var(--text-sanskrit)] font-bold bg-[var(--border-gold)]/30" : "text-[var(--text-primary)]/80"}`}
                 >
                   <span>{ROMAN_NUMERALS[c.id]}. {c.title}</span>
-                  <span className="text-[9px] text-[#8D6E63] italic">{c.date}</span>
+                  <span className="text-[9px] text-[var(--text-secondary)] italic">{c.date}</span>
                 </button>
               ))}
             </div>
@@ -920,7 +920,7 @@ export default function HistoryClient() {
       </div>
 
       {/* Highly Faded, Hand-Drawn Manuscript Pilgrimage line (occupies less than 5% visual attention) */}
-      <div className="absolute top-[500px] bottom-[900px] left-1/2 -translate-x-1/2 w-0.5 border-l border-dashed border-[#E4D5B7]/40 hidden md:block z-0 pointer-events-none" />
+      <div className="absolute top-[500px] bottom-[900px] left-1/2 -translate-x-1/2 w-0.5 border-l border-dashed border-[var(--border-gold)]/30 hidden md:block z-0 pointer-events-none" />
 
       {/* Narrative Chapter Sections (Graphic Novel format: 700px - 1200px heights) */}
       <div className="relative w-full flex flex-col gap-24 md:gap-36 z-10">
@@ -944,12 +944,12 @@ export default function HistoryClient() {
             <section
               key={c.id}
               id={`chapter-section-${c.id}`}
-              className="relative w-full min-h-[700px] md:min-h-[800px] lg:min-h-[900px] flex items-center py-12 border-b border-[#E4D5B7]/10 last:border-b-0"
+              className="relative w-full min-h-[700px] md:min-h-[800px] lg:min-h-[900px] flex items-center py-12 border-b border-[var(--border-gold)]/10 last:border-b-0"
             >
               {/* Subtle visual dot connector at center of screen (Desktop) */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block z-10 pointer-events-none">
-                <div className={`w-2.5 h-2.5 rounded-full border border-[#D4AF37]/40 transition-all duration-700
-                  ${isCurrent ? "bg-[#8C2D19] scale-110" : "bg-[#FAF7F0] scale-75"}`} 
+                <div className={`w-2.5 h-2.5 rounded-full border border-[var(--border-gold)]/40 transition-all duration-700
+                  ${isCurrent ? "bg-[var(--text-sanskrit)] scale-110" : "bg-[var(--bg-secondary)] scale-75"}`} 
                 />
               </div>
 
@@ -986,7 +986,7 @@ export default function HistoryClient() {
                           alt={title} 
                           className={`w-full h-full object-cover select-none filter sepia-[0.08] contrast-[1.05] saturate-[1.1] brightness-[1.02] group-hover:sepia-0 group-hover:saturate-[1.2] transition-all duration-[1200ms] ${
                             isIllustration 
-                              ? "mix-blend-multiply dark:invert dark:mix-blend-screen dark:opacity-85" 
+                              ? "mix-blend-multiply dark:mix-blend-screen dark:opacity-85" 
                               : "mix-blend-normal dark:opacity-85"
                           }`} 
                           style={{
@@ -1023,24 +1023,24 @@ export default function HistoryClient() {
                     </div>
 
                     {/* Date and details */}
-                    <div className={`relative z-10 flex items-center gap-2 text-sm md:text-base font-serif font-bold text-[#8D6E63] uppercase tracking-widest mt-8 md:mt-12 px-3 py-1 border border-[#D4AF37]/35 bg-[#EAE2CF]/10 rounded-sm
+                    <div className={`relative z-10 flex items-center gap-2 text-sm md:text-base font-serif font-bold text-[var(--text-secondary)] uppercase tracking-widest mt-8 md:mt-12 px-3 py-1 border border-[var(--border-gold)]/40 bg-[#EAE2CF]/10 rounded-sm
                       ${isOdd ? "flex-row" : "flex-row-reverse"}`}
                     >
                       <span>{c.date}</span>
                     </div>
 
                     {/* Chapter Title (48px - 72px range) */}
-                    <h2 className="relative z-10 text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-[#8C2D19] leading-tight select-text">
+                    <h2 className="relative z-10 text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-[var(--text-sanskrit)] leading-tight select-text">
                       {title}
                     </h2>
                     
                     {/* Sanskrit translation */}
-                    <span className="relative z-10 text-base md:text-lg font-sanskrit text-[#C5A059] italic font-bold select-text mt-0.5">
+                    <span className="relative z-10 text-base md:text-lg font-sanskrit text-[var(--accent-gold)] italic font-bold select-text mt-0.5">
                       {c.sanskritTitle}
                     </span>
 
                     {/* Sub-headline */}
-                    <h4 className="relative z-10 text-xs md:text-sm font-serif font-bold text-[#3E2723] uppercase tracking-widest mt-1">
+                    <h4 className="relative z-10 text-xs md:text-sm font-serif font-bold text-[var(--text-primary)] uppercase tracking-widest mt-1">
                       &mdash; {headline} &mdash;
                     </h4>
                   </motion.div>
@@ -1051,7 +1051,7 @@ export default function HistoryClient() {
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 1, delay: 0.2 }}
-                    className="text-lg md:text-xl leading-relaxed text-[#3E2723]/95 font-serif select-text max-w-2xl font-light"
+                    className="text-lg md:text-xl leading-relaxed text-[var(--text-primary)]/95 font-serif select-text max-w-2xl font-light"
                   >
                     {storySummary}
                   </motion.p>
@@ -1061,21 +1061,21 @@ export default function HistoryClient() {
                     initial={{ opacity: 0, y: 15 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className={`w-full pt-8 border-t border-[#D4AF37]/25 flex flex-col gap-5 ${isOdd ? "text-left items-start" : "md:text-right md:items-end text-left items-start"}`}
+                    className={`w-full pt-8 border-t border-[var(--border-gold)]/25 flex flex-col gap-5 ${isOdd ? "text-left items-start" : "md:text-right md:items-end text-left items-start"}`}
                   >
                     {/* Top Row: Key Figures & Key Scripture */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full text-left">
                       {/* Key Figures */}
-                      <div className="p-3.5 bg-[#FAF7F0]/40 border border-[#D4AF37]/20 rounded shadow-sm hover:border-[#D4AF37]/45 transition-all">
-                        <h5 className="text-[10px] uppercase tracking-widest font-bold text-[#8C2D19] font-serif mb-2 flex items-center gap-1.5 select-text">
-                          <Users className="w-3.5 h-3.5 text-[#C5A059]" />
+                      <div className="p-3.5 bg-[var(--bg-card)] border border-[var(--border-gold)]/60 rounded shadow-sm hover:border-[var(--accent-saffron)] transition-all">
+                        <h5 className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-sanskrit)] font-serif mb-2 flex items-center gap-1.5 select-text">
+                          <Users className="w-3.5 h-3.5 text-[var(--accent-gold)]" />
                           <span>{labels.keyFigures}</span>
                         </h5>
                         <div className="flex flex-wrap gap-1.5 mt-1">
                           {keyFigures.split(',').map((fig, fIdx) => (
                             <span 
                               key={fIdx} 
-                              className="px-2 py-0.5 rounded-sm bg-[#EAE2CF]/30 border border-[#E4D5B7] text-[11px] font-serif text-[#3E2723] select-text font-medium"
+                              className="px-2 py-0.5 rounded-sm bg-[var(--border-gold)]/20 border border-[var(--border-gold)] text-[11px] font-serif text-[var(--text-primary)] select-text font-medium"
                             >
                               {fig.trim()}
                             </span>
@@ -1084,12 +1084,12 @@ export default function HistoryClient() {
                       </div>
 
                       {/* Key Scripture */}
-                      <div className="p-3.5 bg-[#FAF7F0]/40 border border-[#D4AF37]/20 rounded shadow-sm hover:border-[#D4AF37]/45 transition-all">
-                        <h5 className="text-[10px] uppercase tracking-widest font-bold text-[#8C2D19] font-serif mb-2 flex items-center gap-1.5 select-text">
-                          <BookOpen className="w-3.5 h-3.5 text-[#C5A059]" />
+                      <div className="p-3.5 bg-[var(--bg-card)] border border-[var(--border-gold)]/60 rounded shadow-sm hover:border-[var(--accent-saffron)] transition-all">
+                        <h5 className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-sanskrit)] font-serif mb-2 flex items-center gap-1.5 select-text">
+                          <BookOpen className="w-3.5 h-3.5 text-[var(--accent-gold)]" />
                           <span>{labels.keyScripture}</span>
                         </h5>
-                        <div className="text-xs text-[#8D6E63] font-serif leading-relaxed select-text font-medium mt-1">
+                        <div className="text-xs text-[var(--text-secondary)] font-serif leading-relaxed select-text font-medium mt-1">
                           {keyScripture.includes(",") || keyScripture.includes("/") ? (
                             <div className="flex flex-wrap gap-1.5">
                               {keyScripture.split(/[,/]/).map((scr, sIdx) => {
@@ -1098,7 +1098,7 @@ export default function HistoryClient() {
                                   <Link
                                     key={sIdx}
                                     href={getScriptureLink(cleanScr)}
-                                    className="px-2 py-0.5 rounded-sm bg-[#8C2D19]/5 hover:bg-[#8C2D19]/10 border border-[#8C2D19]/20 text-[11px] font-serif text-[#8C2D19] hover:text-[#3E2723] transition-colors no-underline font-bold inline-block"
+                                    className="px-2 py-0.5 rounded-sm bg-[var(--text-sanskrit)]/5 hover:bg-[var(--text-sanskrit)]/10 border border-[var(--text-sanskrit)]/30 text-[11px] font-serif text-[var(--text-sanskrit)] hover:text-[var(--text-primary)] transition-colors no-underline font-bold inline-block"
                                   >
                                     {cleanScr}
                                   </Link>
@@ -1108,7 +1108,7 @@ export default function HistoryClient() {
                           ) : (
                             <Link 
                               href={getScriptureLink(keyScripture)}
-                              className="inline-flex items-center gap-1 text-[#8C2D19] hover:text-[#3E2723] border-b border-[#8C2D19]/30 hover:border-[#3E2723] pb-0.5 transition-colors no-underline font-bold"
+                              className="inline-flex items-center gap-1 text-[var(--text-sanskrit)] hover:text-[var(--text-primary)] border-b border-[var(--text-sanskrit)]/35 hover:border-[var(--text-primary)] pb-0.5 transition-colors no-underline font-bold"
                             >
                               {keyScripture}
                             </Link>
@@ -1119,23 +1119,23 @@ export default function HistoryClient() {
 
                     {/* Why It Matters Callout Box */}
                     <div className="p-3.5 border-l-2 border-[#D4AF37] bg-[#D4AF37]/5 rounded-r shadow-sm w-full text-left">
-                      <h5 className="text-[10px] uppercase tracking-widest font-bold text-[#8C2D19] font-serif mb-1 flex items-center gap-1.5 select-text">
-                        <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      <h5 className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-sanskrit)] font-serif mb-1 flex items-center gap-1.5 select-text">
+                        <Sparkles className="w-3.5 h-3.5 text-[var(--accent-gold)]" />
                         <span>{labels.whyItMatters}</span>
                       </h5>
-                      <p className="text-xs md:text-sm text-[#3E2723]/90 font-serif italic leading-relaxed select-text font-medium">
+                      <p className="text-xs md:text-sm text-[var(--text-primary)]/90 font-serif italic leading-relaxed select-text font-medium">
                         &ldquo;{whyItMatters}&rdquo;
                       </p>
                     </div>
 
                     {/* Historical Legacy Callout Box */}
                     {legacy && (
-                      <div className="p-3.5 border-l-2 border-[#8C2D19] bg-[#8C2D19]/5 rounded-r shadow-sm w-full text-left">
-                        <h5 className="text-[10px] uppercase tracking-widest font-bold text-[#8C2D19] font-serif mb-1 flex items-center gap-1.5 select-text">
-                          <Award className="w-3.5 h-3.5 text-[#8C2D19]" />
+                      <div className="p-3.5 border-l-2 border-[#8C2D19] bg-[var(--text-sanskrit)]/5 rounded-r shadow-sm w-full text-left">
+                        <h5 className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-sanskrit)] font-serif mb-1 flex items-center gap-1.5 select-text">
+                          <Award className="w-3.5 h-3.5 text-[var(--text-sanskrit)]" />
                           <span>{labels.legacy}</span>
                         </h5>
-                        <p className="text-xs md:text-sm text-[#3E2723]/90 font-serif leading-relaxed select-text font-medium">
+                        <p className="text-xs md:text-sm text-[var(--text-primary)]/90 font-serif leading-relaxed select-text font-medium">
                           {legacy}
                         </p>
                       </div>
@@ -1147,7 +1147,7 @@ export default function HistoryClient() {
                     {c.id < 16 ? (
                       <button
                         onClick={() => scrollToSection(c.id + 1)}
-                        className="inline-flex items-center gap-2 text-xs font-serif font-bold text-[#8C2D19] hover:text-[#3E2723] transition-colors border-b border-[#8C2D19]/40 hover:border-[#3E2723] pb-1 cursor-pointer"
+                        className="inline-flex items-center gap-2 text-xs font-serif font-bold text-[var(--text-sanskrit)] hover:text-[var(--text-primary)] transition-colors border-b border-[var(--border-gold)]/40 hover:border-[var(--text-primary)] pb-1 cursor-pointer"
                       >
                         <span>{labels.continueJourney} {ROMAN_NUMERALS[c.id + 1]}</span>
                         <span className="text-base">&rarr;</span>
@@ -1155,7 +1155,7 @@ export default function HistoryClient() {
                     ) : (
                       <Link
                         href="/library"
-                        className="inline-flex items-center gap-2 text-xs font-serif font-bold text-[#8C2D19] hover:text-[#3E2723] transition-colors border-b border-[#8C2D19]/40 hover:border-[#3E2723] pb-1 cursor-pointer"
+                        className="inline-flex items-center gap-2 text-xs font-serif font-bold text-[var(--text-sanskrit)] hover:text-[var(--text-primary)] transition-colors border-b border-[var(--border-gold)]/40 hover:border-[var(--text-primary)] pb-1 cursor-pointer"
                       >
                         <span>{currentLang === "HI" ? "पुस्तकालय पर वापस जाएँ" : currentLang === "SA" ? "पुस्तकालयं प्रति निवर्तताम्" : "Return to Sacred Museum"}</span>
                         <span className="text-base">&rarr;</span>
@@ -1173,16 +1173,16 @@ export default function HistoryClient() {
 
       {/* Epilogue: Sanatan Dharma Today */}
       <section className="relative z-10 max-w-5xl w-full px-6 md:px-12 mt-40 select-text">
-        <div className="p-8 md:p-16 bg-[#FAF7F0] border-4 border-double border-[#D4AF37]/45 rounded-sm shadow-2xl flex flex-col items-center">
+        <div className="p-8 md:p-16 bg-[var(--bg-secondary)] border-4 border-double border-[#D4AF37]/45 rounded-sm shadow-2xl flex flex-col items-center">
           
-          <div className="w-12 h-12 rounded-full border border-[#D4AF37] flex items-center justify-center text-[#D4AF37] mb-5 bg-[#FAF7F0] shadow-sm animate-pulse">
+          <div className="w-12 h-12 rounded-full border border-[#D4AF37] flex items-center justify-center text-[var(--accent-gold)] mb-5 bg-[var(--bg-secondary)] shadow-sm animate-pulse">
             <Globe className="w-6 h-6" />
           </div>
 
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-[#8C2D19] text-center select-text">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-[var(--text-sanskrit)] text-center select-text">
             {labels.presentDayTitle}
           </h2>
-          <p className="text-base md:text-lg font-serif text-[#8D6E63] italic text-center mt-2 select-text">
+          <p className="text-base md:text-lg font-serif text-[var(--text-secondary)] italic text-center mt-2 select-text">
             {labels.presentDaySubtitle}
           </p>
 
@@ -1193,14 +1193,14 @@ export default function HistoryClient() {
             
             {/* 1. Global Yoga */}
             <div className="flex flex-col md:flex-row gap-5 items-start text-left">
-              <span className="p-2.5 bg-[#EAE2CF]/25 border border-[#E4D5B7] rounded-full text-[#8C2D19] shadow-inner shrink-0 mt-1">
+              <span className="p-2.5 bg-[var(--border-gold)]/10 border border-[var(--border-gold)] rounded-full text-[var(--text-sanskrit)] shadow-inner shrink-0 mt-1">
                 <CheckCircle className="w-4 h-4" />
               </span>
               <div>
-                <h4 className="text-xl font-serif font-bold text-[#3E2723] select-text">
+                <h4 className="text-xl font-serif font-bold text-[var(--text-primary)] select-text">
                   {labels.globalYoga}
                 </h4>
-                <p className="text-sm md:text-base lg:text-lg leading-relaxed text-[#8D6E63] font-serif select-text mt-1.5">
+                <p className="text-sm md:text-base lg:text-lg leading-relaxed text-[var(--text-secondary)] font-serif select-text mt-1.5">
                   {labels.globalYogaDesc}
                 </p>
               </div>
@@ -1208,14 +1208,14 @@ export default function HistoryClient() {
 
             {/* 2. Vedanta */}
             <div className="flex flex-col md:flex-row gap-5 items-start text-left">
-              <span className="p-2.5 bg-[#EAE2CF]/25 border border-[#E4D5B7] rounded-full text-[#8C2D19] shadow-inner shrink-0 mt-1">
+              <span className="p-2.5 bg-[var(--border-gold)]/10 border border-[var(--border-gold)] rounded-full text-[var(--text-sanskrit)] shadow-inner shrink-0 mt-1">
                 <Sparkles className="w-4 h-4" />
               </span>
               <div>
-                <h4 className="text-xl font-serif font-bold text-[#3E2723] select-text">
+                <h4 className="text-xl font-serif font-bold text-[var(--text-primary)] select-text">
                   {labels.vedanta}
                 </h4>
-                <p className="text-sm md:text-base lg:text-lg leading-relaxed text-[#8D6E63] font-serif select-text mt-1.5">
+                <p className="text-sm md:text-base lg:text-lg leading-relaxed text-[var(--text-secondary)] font-serif select-text mt-1.5">
                   {labels.vedantaDesc}
                 </p>
               </div>
@@ -1223,14 +1223,14 @@ export default function HistoryClient() {
 
             {/* 3. Ayurveda */}
             <div className="flex flex-col md:flex-row gap-5 items-start text-left">
-              <span className="p-2.5 bg-[#EAE2CF]/25 border border-[#E4D5B7] rounded-full text-[#8C2D19] shadow-inner shrink-0 mt-1">
+              <span className="p-2.5 bg-[var(--border-gold)]/10 border border-[var(--border-gold)] rounded-full text-[var(--text-sanskrit)] shadow-inner shrink-0 mt-1">
                 <Leaf className="w-4 h-4" />
               </span>
               <div>
-                <h4 className="text-xl font-serif font-bold text-[#3E2723] select-text">
+                <h4 className="text-xl font-serif font-bold text-[var(--text-primary)] select-text">
                   {labels.ayurveda}
                 </h4>
-                <p className="text-sm md:text-base lg:text-lg leading-relaxed text-[#8D6E63] font-serif select-text mt-1.5">
+                <p className="text-sm md:text-base lg:text-lg leading-relaxed text-[var(--text-secondary)] font-serif select-text mt-1.5">
                   {labels.ayurvedaDesc}
                 </p>
               </div>
@@ -1238,14 +1238,14 @@ export default function HistoryClient() {
 
             {/* 4. Digital Preservation */}
             <div className="flex flex-col md:flex-row gap-5 items-start text-left">
-              <span className="p-2.5 bg-[#EAE2CF]/25 border border-[#E4D5B7] rounded-full text-[#8C2D19] shadow-inner shrink-0 mt-1">
+              <span className="p-2.5 bg-[var(--border-gold)]/10 border border-[var(--border-gold)] rounded-full text-[var(--text-sanskrit)] shadow-inner shrink-0 mt-1">
                 <ScrollIcon className="w-4 h-4" />
               </span>
               <div>
-                <h4 className="text-xl font-serif font-bold text-[#3E2723] select-text">
+                <h4 className="text-xl font-serif font-bold text-[var(--text-primary)] select-text">
                   {labels.digitalPreservation}
                 </h4>
-                <p className="text-sm md:text-base lg:text-lg leading-relaxed text-[#8D6E63] font-serif select-text mt-1.5">
+                <p className="text-sm md:text-base lg:text-lg leading-relaxed text-[var(--text-secondary)] font-serif select-text mt-1.5">
                   {labels.digitalPreservationDesc}
                 </p>
               </div>
@@ -1253,14 +1253,14 @@ export default function HistoryClient() {
 
             {/* 5. Future of Dharma */}
             <div className="flex flex-col md:flex-row gap-5 items-start text-left">
-              <span className="p-2.5 bg-[#EAE2CF]/25 border border-[#E4D5B7] rounded-full text-[#8C2D19] shadow-inner shrink-0 mt-1">
+              <span className="p-2.5 bg-[var(--border-gold)]/10 border border-[var(--border-gold)] rounded-full text-[var(--text-sanskrit)] shadow-inner shrink-0 mt-1">
                 <Feather className="w-4 h-4" />
               </span>
               <div>
-                <h4 className="text-xl font-serif font-bold text-[#3E2723] select-text">
+                <h4 className="text-xl font-serif font-bold text-[var(--text-primary)] select-text">
                   {labels.futureDharma}
                 </h4>
-                <p className="text-sm md:text-base lg:text-lg leading-relaxed text-[#8D6E63] font-serif select-text mt-1.5">
+                <p className="text-sm md:text-base lg:text-lg leading-relaxed text-[var(--text-secondary)] font-serif select-text mt-1.5">
                   {labels.futureDharmaDesc}
                 </p>
               </div>
@@ -1270,7 +1270,7 @@ export default function HistoryClient() {
 
           <div className="w-72 h-px bg-[#D4AF37]/35 my-12" />
           
-          <span className="text-xs md:text-sm font-sanskrit text-[#8C2D19] font-bold tracking-widest text-center select-text">
+          <span className="text-xs md:text-sm font-sanskrit text-[var(--text-sanskrit)] font-bold tracking-widest text-center select-text">
             धर्मो रक्षति रक्षितः | यतो धर्मस्ततो जयः
           </span>
 

@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import { Compass, Sparkles, BookOpen, ArrowRight } from "lucide-react";
-import { DEITIES_DATA, DeityDetail } from "@/lib/deities-data";
+import { motion } from "framer-motion";
+import { Search } from "lucide-react";
+import { DEITIES_DATA } from "@/lib/deities-data";
 import { useLanguageStore } from "@/store/useLanguageStore";
 import { useSacredSound } from "@/lib/sacred-audio";
 import SacredImage from "../ui/SacredImage";
@@ -14,10 +14,19 @@ import GoldParticleField from "../effects/GoldParticleField";
 // Sanskrit Numerals mapping
 const SANSKRIT_NUMBERS = ["१", "२", "३", "४", "५", "६", "७", "८", "९", "१०", "११", "१२", "१३"];
 
+const CATEGORIES = [
+  { id: "all", label: "ALL MANIFESTATIONS" },
+  { id: "trimurti", label: "THE TRIMURTI" },
+  { id: "tridevi", label: "THE TRIDEVI" },
+  { id: "avatars", label: "AVATARS & HEROES" },
+  { id: "guardians", label: "SACRED GUARDIANS" }
+];
+
 export default function DeitiesDirectoryView() {
   const currentLang = useLanguageStore((state) => state.language);
-  const { playClick } = useSacredSound();
-  const [activeSlug, setActiveSlug] = useState<string>("shiva");
+  const { playClick, playNavigate } = useSacredSound();
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [isDarkMode, setIsDarkMode] = useState(true);
   
   useEffect(() => {
@@ -37,208 +46,142 @@ export default function DeitiesDirectoryView() {
   }, []);
 
   const deitiesList = Object.values(DEITIES_DATA);
-  const activeDeity = DEITIES_DATA[activeSlug] || deitiesList[0];
 
-  const handleDeityHover = (slug: string) => {
-    if (slug !== activeSlug) {
-      setActiveSlug(slug);
+  const filteredDeities = deitiesList.filter((deity) => {
+    // Category filter
+    if (activeCategory === "trimurti") {
+      if (!["shiva", "vishnu", "brahma"].includes(deity.slug)) return false;
+    } else if (activeCategory === "tridevi") {
+      if (!["saraswati", "lakshmi", "parvati", "durga", "kali"].includes(deity.slug)) return false;
+    } else if (activeCategory === "avatars") {
+      if (!["rama", "krishna"].includes(deity.slug)) return false;
+    } else if (activeCategory === "guardians") {
+      if (!["ganesha", "kartikeya", "hanuman"].includes(deity.slug)) return false;
     }
-  };
+
+    // Search query filter
+    if (searchQuery.trim() !== "") {
+      const q = searchQuery.toLowerCase();
+      const matchEnglish = deity.nameEnglish.toLowerCase().includes(q);
+      const matchSanskrit = deity.nameSanskrit.includes(q);
+      const matchRole = deity.role.toLowerCase().includes(q);
+      const matchFunction = deity.divineFunction.toLowerCase().includes(q);
+      return matchEnglish || matchSanskrit || matchRole || matchFunction;
+    }
+
+    return true;
+  });
 
   return (
-    <div className={`flex flex-col min-h-screen ${isDarkMode ? "dark bg-[#030107]" : "bg-[#FAF7F2]"} text-[var(--text-primary)] transition-colors duration-500 overflow-x-hidden relative`}>
+    <div 
+      className="flex flex-col min-h-screen text-[var(--text-primary)] transition-colors duration-500 overflow-x-hidden relative"
+      style={{
+        background: "radial-gradient(circle at 50% 15%, #20150e 0%, #0d0806 70%, #040201 100%)",
+      }}
+    >
       <GoldParticleField />
-
-      {/* Cosmic aura behind the active deity */}
-      <div 
-        className="absolute right-0 top-0 w-[50vw] h-[100vh] opacity-10 pointer-events-none z-0 transition-all duration-1000"
-        style={{ background: activeDeity.bgGradient }}
-      />
 
       <Breadcrumb items={[{ label: "Deities" }]} />
 
-      {/* Page Header */}
-      <header className="relative text-center py-12 px-6 border-b border-[var(--border-gold)]/20 overflow-hidden z-10 select-none">
-        <span className="font-sanskrit text-4xl text-[#FFD700] font-bold tracking-widest drop-shadow-md mb-2 block">
-          देव देवियाँ
+      {/* Page Header matching the premium REANIQUE layout */}
+      <header className="relative text-center pt-16 pb-8 px-6 overflow-hidden z-10 select-none max-w-5xl mx-auto">
+        <span className="font-serif text-[10px] text-[#A5824B] uppercase tracking-[0.25em] font-extrabold block mb-3">
+          सनातन दर्शन • SANATAN DARSHAN
         </span>
-        <h1 className="text-3xl md:text-5xl text-[var(--text-primary)] font-serif font-bold uppercase tracking-wider">
+        <h1 className="text-4xl md:text-6xl text-white font-serif font-black uppercase tracking-[0.12em] drop-shadow-md">
           Sacred Deities Directory
         </h1>
-        <p className="font-body text-xs md:text-sm text-[var(--text-secondary)] max-w-2xl mt-4 leading-relaxed mx-auto">
-          Explore the divine manifestations and profiles of ultimate consciousness.
-          Each entry acts as a portal into their names, weapons, temples, and stories.
+        <div className="h-[1px] w-48 bg-gradient-to-r from-transparent via-[#A5824B]/60 to-transparent mx-auto mt-6 mb-4" />
+        <p className="font-serif italic text-sm text-slate-300 max-w-2xl leading-relaxed mx-auto">
+          &ldquo;The absolute consciousness manifests in various divine forms to guide seekers, restore cosmic balance, and reveal universal truths.&rdquo;
         </p>
+
+        {/* Premium Search input scroll */}
+        <div className="mt-8 max-w-md mx-auto relative group">
+          <input
+            type="text"
+            placeholder="Search the sacred scrolls..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-[#1b120c]/60 border border-[#A5824B]/35 rounded-full py-2.5 pl-11 pr-4 text-xs font-serif text-white placeholder-slate-400 focus:outline-none focus:border-[#A5824B]/80 transition-colors shadow-inner"
+          />
+          <Search className="w-4 h-4 text-[#A5824B]/60 absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-[#A5824B] transition-colors" />
+        </div>
+
+        {/* Dynamic Category Navigation Scroll */}
+        <div className="mt-8 flex flex-wrap gap-2 justify-center select-none max-w-4xl mx-auto px-4">
+          {CATEGORIES.map((cat) => {
+            const isActive = activeCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => { playClick(); setActiveCategory(cat.id); }}
+                className={`px-4 py-2 border text-[9px] font-mono tracking-widest font-black rounded-full cursor-pointer transition-all duration-300
+                  ${isActive 
+                    ? "bg-gradient-to-r from-[#B8860B] to-[#DAA520] border-[#FFE485] text-black shadow-lg" 
+                    : "bg-[#160f0a]/80 border-[#A5824B]/25 text-[#A5824B] hover:text-white hover:bg-[#20150e]/50"}`}
+              >
+                {cat.label}
+              </button>
+            );
+          })}
+        </div>
       </header>
 
-      {/* Main Exhibition Layout */}
-      <main className="flex-grow max-w-7xl mx-auto w-full px-4 py-8 md:py-12 z-10 relative">
-        <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-8 items-start">
-          
-          {/* LEFT COLUMN: The Ancient Manuscript Index */}
-          <div className="flex flex-col gap-4">
-            <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold pl-2 block">
-              Manuscript Folios (१ - १३)
-            </span>
-            
-            <div className="flex flex-col border border-[var(--border-gold)]/35 rounded-xl overflow-hidden divide-y divide-[var(--border-gold)]/20 shadow-md">
-              {deitiesList.map((deity, idx) => {
-                const isActive = activeSlug === deity.slug;
-                return (
-                  <div
-                    key={deity.slug}
-                    onMouseEnter={() => handleDeityHover(deity.slug)}
-                    onClick={() => playClick()}
-                    className={`flex items-center gap-4 p-4 md:p-6 transition-all duration-300 relative select-text
-                      ${isActive 
-                        ? (isDarkMode ? "bg-white/5" : "bg-[#F3EBE0]") 
-                        : "hover:bg-white/2 dark:hover:bg-white/1"}`}
+      {/* Main Exhibition Card Grid */}
+      <main className="flex-grow max-w-7xl mx-auto w-full px-4 py-6 md:py-10 z-10 relative">
+        {filteredDeities.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="font-serif italic text-slate-400 text-sm">No scrolls found matching the search criteria.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
+            {filteredDeities.map((deity, idx) => {
+              const sansNumber = SANSKRIT_NUMBERS[deitiesList.findIndex(d => d.slug === deity.slug)];
+              
+              // We render cards in a Link component to navigate to their premium detail view page
+              return (
+                <Link 
+                  href={`/deities/${deity.slug}`} 
+                  key={deity.slug}
+                  onClick={() => playNavigate()}
+                  className="no-underline block"
+                >
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: Math.min(idx * 0.05, 0.3) }}
                   >
-                    {/* Active accent vertical bar */}
-                    {isActive && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--accent-gold)]" />
-                    )}
-
-                    {/* Sanskrit Number */}
-                    <div className="font-sanskrit text-lg md:text-xl font-bold text-[var(--accent-gold)] w-8 text-center shrink-0">
-                      {SANSKRIT_NUMBERS[idx]}
-                    </div>
-
-                    {/* Emblem Avatar (Small icon circle) */}
-                    <div className="w-12 h-12 rounded-full overflow-hidden border border-[var(--border-gold)]/30 bg-[#161218]/90 flex items-center justify-center shrink-0">
+                    {/* Unified Premium Card: Full Bleed Portrait with Gold-Amber Gradient Overlay */}
+                    <div className="relative h-[280px] rounded-3xl overflow-hidden border border-[#A5824B]/35 shadow-2xl bg-[#1C120B] hover:scale-[1.015] hover:border-[#FFE485]/60 hover:shadow-[0_15px_30px_rgba(165,130,75,0.25)] transition-all duration-500 group cursor-pointer flex flex-col justify-end p-6 text-left">
                       <SacredImage 
                         src={deity.heroImage} 
                         alt={deity.nameEnglish} 
-                        className="w-full h-full object-cover"
-                        fallbackText={deity.nameSanskrit}
+                        className="absolute inset-0 w-full h-full object-cover opacity-70 sepia-[0.1] contrast-[1.1] group-hover:scale-105 transition-transform duration-700 scale-102" 
                         type="deity"
                       />
-                    </div>
-
-                    {/* Core Info */}
-                    <div className="flex-grow">
-                      <div className="flex flex-wrap items-baseline gap-x-2">
-                        <span className="font-sanskrit text-lg font-bold text-[var(--text-sanskrit)] dark:text-[var(--accent-gold)]">
-                          {deity.nameSanskrit}
-                        </span>
-                        <h3 className="font-serif text-sm md:text-base font-extrabold text-[var(--text-primary)]">
-                          {deity.nameEnglish}
-                        </h3>
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/55 to-transparent z-0" />
+                      <div className="absolute inset-3 border border-[#FFE485]/20 rounded-2xl pointer-events-none z-10" />
+                      
+                      <div className="relative z-10 flex flex-col justify-between h-full">
+                        <span className="font-serif text-[8px] uppercase tracking-[0.2em] text-[#FFE485]/70 font-black">MANIFESTATION {sansNumber}</span>
+                        <div>
+                          <span className="font-sanskrit text-lg font-bold text-[#FFE485]">{deity.nameSanskrit}</span>
+                          <h3 className="font-serif text-3xl font-black uppercase tracking-wider text-white mt-1 leading-none">{deity.nameEnglish}</h3>
+                          <p className="text-[11px] text-[#FAF5EF]/85 font-serif leading-relaxed line-clamp-2 mt-2 max-w-sm">{deity.role}</p>
+                          <span className="text-[9px] font-serif italic text-[#FFE485] font-extrabold flex items-center gap-1 mt-3 group-hover:translate-x-1 transition-transform">
+                            Explore Folio &rarr;
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed mt-1 line-clamp-1">
-                        {deity.role}
-                      </p>
                     </div>
-
-                    {/* Consort info & explore arrow */}
-                    <div className="text-right shrink-0 hidden sm:flex flex-col items-end gap-1 select-none">
-                      <span className="text-[9px] uppercase tracking-wider text-[var(--text-secondary)]">Consort</span>
-                      <span className="text-[10px] font-bold text-[var(--text-primary)]">{deity.consort}</span>
-                    </div>
-
-                    <Link 
-                      href={`/deities/${deity.slug}`}
-                      className="p-2 border border-[var(--border-gold)]/20 hover:border-[var(--accent-gold)] rounded-lg transition-colors cursor-pointer shrink-0"
-                    >
-                      <ChevronRight className="w-4 h-4 text-[var(--accent-gold)]" />
-                    </Link>
-                  </div>
-                );
-              })}
-            </div>
+                  </motion.div>
+                </Link>
+              );
+            })}
           </div>
-
-          {/* RIGHT COLUMN: The Sticky Live-Glowing Showcase */}
-          <div className="sticky top-24 hidden lg:flex flex-col gap-5 select-none">
-            <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold pl-2 block">
-              Digital Altar Darshan
-            </span>
-
-            <div className={`border border-[var(--border-gold)]/35 rounded-xl p-6 flex flex-col items-center justify-between text-center min-h-[460px] shadow-2xl relative overflow-hidden backdrop-blur-md
-              ${isDarkMode ? "bg-white/5" : "bg-[#FAF7F2]/90"}`}>
-              
-              {/* Concentric rings behind showcase */}
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 z-0 pointer-events-none opacity-40">
-                <div className="concentric-circle concentric-circle-1" />
-                <div className="concentric-circle concentric-circle-2" />
-                <div className="concentric-circle concentric-circle-3" />
-              </div>
-
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeDeity.slug}
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.96 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex flex-col items-center gap-4 w-full z-10"
-                >
-                  {/* Large showcase image */}
-                  <div className="w-44 h-44 rounded-full overflow-hidden border-2 border-[var(--border-gold)]/40 bg-[#140e1a]/95 flex items-center justify-center shadow-xl group">
-                    <SacredImage 
-                      src={activeDeity.heroImage} 
-                      alt={activeDeity.nameEnglish} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      fallbackText={activeDeity.nameSanskrit}
-                      type="deity"
-                    />
-                  </div>
-
-                  {/* Text details */}
-                  <div className="mt-2 flex flex-col items-center gap-1">
-                    <span className="font-sanskrit text-3xl text-[#FFD700] font-bold tracking-widest drop-shadow-[0_0_8px_rgba(212,160,23,0.3)]">
-                      {activeDeity.nameSanskrit}
-                    </span>
-                    <h2 className="text-xl font-serif font-bold text-[var(--text-primary)]">
-                      {activeDeity.nameEnglish}
-                    </h2>
-                    <span className="text-[10px] text-[var(--accent-gold)] uppercase tracking-widest font-mono font-bold">
-                      {activeDeity.divineFunction}
-                    </span>
-                  </div>
-
-                  {/* Primary Mantra */}
-                  <div className="w-full bg-white/3 dark:bg-black/20 p-3 rounded border border-[var(--border-gold)]/10 text-center select-text">
-                    <span className="text-[8px] uppercase tracking-wider text-[var(--text-secondary)] font-mono block mb-1">
-                      Mantra
-                    </span>
-                    <p className="font-sanskrit text-base text-[var(--text-sanskrit)] dark:text-[var(--accent-gold)] font-bold">
-                      {activeDeity.mantras[0].text}
-                    </p>
-                    <p className="text-[10px] text-[var(--text-secondary)] mt-1 truncate">
-                      {activeDeity.mantras[0].translation}
-                    </p>
-                  </div>
-
-                  {/* Description summary */}
-                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed select-text line-clamp-3">
-                    {activeDeity.originStory}
-                  </p>
-
-                  <Link href={`/deities/${activeDeity.slug}`} className="no-underline w-full mt-4">
-                    <button className="w-full py-2.5 bg-gradient-to-r from-[#D4A017] to-[#B8860B] hover:from-[#FFD700] hover:to-[#D4A017] text-black font-extrabold text-[11px] uppercase tracking-wider rounded-lg shadow hover:shadow-[#D4A01720] transition-all transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-1.5">
-                      <span>Explore Premium Page</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </Link>
-
-                </motion.div>
-              </AnimatePresence>
-
-            </div>
-          </div>
-
-        </div>
+        )}
       </main>
     </div>
-  );
-}
-
-// Simple chevron component
-function ChevronRight({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-    </svg>
   );
 }
