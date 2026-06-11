@@ -1,4 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap');
 @import "tailwindcss";
+
 
 /* ══════════ DESIGN DNA: SACRED CONFIG & COLOR VARIABLES ══════════ */
 :root {
@@ -476,6 +478,12 @@ p, li, h1, h2, h3 {
   line-height: 1.8;
   word-spacing: 0.1em;
 }
+
+/* Classical Cursive Script text */
+.font-cursive {
+  font-family: 'Alex Brush', cursive, serif;
+}
+
 
 /* Anti-gravity glass */
 .ag-glass {

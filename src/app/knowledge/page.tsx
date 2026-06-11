@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Sparkles, Activity, Key, Flame } from "lucide-react";
+import Image from "next/image";
+import { ChevronLeft, ChevronRight, X, BookOpen, Quote } from "lucide-react";
 import Footer from "@/components/layout/Footer";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { useSacredSound } from "@/lib/sacred-audio";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ConceptData {
   titleSanskrit: string;
@@ -17,6 +19,8 @@ interface ConceptData {
   summary: string;
   pillars: { title: string; desc: string }[];
   accentColor: string;
+  image: string; // Double exposure image path
+  cursiveSubhead: string;
 }
 
 const CONCEPTS: Record<string, ConceptData> = {
@@ -28,10 +32,12 @@ const CONCEPTS: Record<string, ConceptData> = {
     translationHindi: "जिससे लौकिक उन्नति (अभ्युदय) और पारलौकिक कल्याण (निःश्रेयस) की सिद्धि होती है, वही धर्म है।",
     translationEnglish: "That from which results the achievement of both material prosperity (Abhyudaya) and ultimate spiritual liberation (Nihshreyasa), is Dharma.",
     summary: "Dharma is the cosmic order, righteousness, moral duty, and the essential nature of existence. It is not mere ritual or belief, but the fundamental law that sustains life and holds the universe together.",
+    cursiveSubhead: "The Cosmic Order & Righteousness",
+    image: "/images/knowledge/dharma.png",
     pillars: [
       { title: "Satya (Truth)", desc: "Commitment to truthfulness in thought, speech, and action." },
-      { title: "Daya (Compassion)", desc: "Empathy towards all living beings, recognizing the divine spark in everyone." },
-      { title: "Dana (Charity)", desc: "Generosity and sharing of resources to uplift the underprivileged." },
+      { title: "Daya (Compassion)", desc: "Empathy towards all living beings, recognizing the divine spark." },
+      { title: "Dana (Charity)", desc: "Generosity and sharing of resources to uplift others." },
       { title: "Shaucha (Purity)", desc: "Cleanliness of body, mind, intellect, and spiritual intent." }
     ],
     accentColor: "#FFD700"
@@ -40,13 +46,15 @@ const CONCEPTS: Record<string, ConceptData> = {
     titleSanskrit: "कर्म",
     titleEnglish: "Karma",
     shloka: "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन ।\nमा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि ॥",
-    transliteration: "karmaṇyevādhikāraste mā phaleṣu kadācana |\nmā karmaphalaheturbhūrmā te saṅgo'stvakarmaṇi ||",
+    transliteration: "karmaṇyevādhikāraste mā phaleṣu kadācena |\nmā karmaphalaheturbhūrmā te saṅgo'stvakarmaṇi ||",
     translationHindi: "तुम्हारा अधिकार केवल कर्म करने पर है, उसके फलों पर कभी नहीं। तुम कर्मों के फल की वासना वाले मत बनो और तुम्हारी अकर्मण्यता में भी आसक्ति न हो।",
     translationEnglish: "You have a right to perform your prescribed duties, but you are not entitled to the fruits of your actions. Let not the fruits of action be your motive, nor let your attachment be to inaction.",
     summary: "Karma is the law of cause and effect. Every action generates a force of energy that returns to us in like kind. It emphasizes personal accountability, indicating that our choices shape our destiny.",
+    cursiveSubhead: "The Law of Actions & Consequence",
+    image: "/images/knowledge/artha.png",
     pillars: [
       { title: "Sanchita Karma", desc: "The accumulated store of past actions waiting to bear fruit." },
-      { title: "Prarabdha Karma", desc: "The portion of past karma currently being experienced in the present life." },
+      { title: "Prarabdha Karma", desc: "The portion of past karma currently being experienced in present life." },
       { title: "Agami Karma", desc: "The actions being performed now that will bear fruit in the future." },
       { title: "Nishkama Karma", desc: "Selfless action performed without attachment to personal reward." }
     ],
@@ -60,6 +68,8 @@ const CONCEPTS: Record<string, ConceptData> = {
     translationHindi: "बुद्धिमान् ज्ञानी पुरुष सदा परमात्मा के उस परम पद (मोक्ष) को देखते हैं जो आकाश के समान व्यापक है।",
     translationEnglish: "The wise seers always behold that supreme abode of the divine (Vishnu) in eternal liberation, which is all-pervading like space.",
     summary: "Moksha is liberation from the endless cycle of birth, death, and rebirth (Samsara). It is the realization of the absolute identity of the individual soul (Atman) with the Supreme Reality (Brahman).",
+    cursiveSubhead: "The Ultimate Spiritual Liberation",
+    image: "/images/knowledge/moksha.png",
     pillars: [
       { title: "Viveka (Discrimination)", desc: "Distinguishing between the eternal reality and the transient world." },
       { title: "Vairagya (Dispassion)", desc: "Detachment from sensory pleasures and temporary worldly rewards." },
@@ -76,156 +86,303 @@ const CONCEPTS: Record<string, ConceptData> = {
     translationHindi: "चित्त की वृत्तियों (विचारों के उतार-चढ़ाव) को रोकना ही योग है।",
     translationEnglish: "Yoga is the intentional restraint of the modifications of the mind-stuff.",
     summary: "Yoga is the union of the individual consciousness with the universal consciousness. It comprises systematic paths of mental control, physical discipline, and devotion designed to achieve spiritual liberation.",
+    cursiveSubhead: "The Divine Union of Consciousness",
+    image: "/images/knowledge/kama.png",
     pillars: [
       { title: "Jnana Yoga", desc: "The path of wisdom, self-inquiry, and intellectual realization." },
       { title: "Bhakti Yoga", desc: "The path of absolute love, devotion, and surrender to the Divine." },
       { title: "Karma Yoga", desc: "The path of selfless action, duty, and service to humanity." },
-      { title: "Raja Yoga", desc: "The path of meditation, breath control, and eight-fold mental discipline (Ashtanga)." }
+      { title: "Raja Yoga", desc: "The path of meditation, breath control, and eight-fold mental discipline." }
     ],
     accentColor: "#3B82F6"
   }
 };
+
+const CONCEPT_IDS = ["dharma", "karma", "moksha", "yoga"] as const;
 
 function KnowledgePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const tabParam = searchParams ? searchParams.get("tab") : null;
   
-  const [activeTab, setActiveTab] = useState<"dharma" | "karma" | "moksha" | "yoga">("dharma");
-  const { playClick } = useSacredSound();
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const { playClick, playOm } = useSacredSound();
 
+  // Sync tabParam to active slide
   useEffect(() => {
     requestAnimationFrame(() => {
-      if (tabParam && (tabParam === "dharma" || tabParam === "karma" || tabParam === "moksha" || tabParam === "yoga")) {
-        setActiveTab(tabParam);
+      if (tabParam && CONCEPT_IDS.includes(tabParam as typeof CONCEPT_IDS[number])) {
+        const slideIndex = CONCEPT_IDS.indexOf(tabParam as typeof CONCEPT_IDS[number]);
+        if (slideIndex !== -1) {
+          setActiveSlide(slideIndex);
+        }
       }
     });
   }, [tabParam]);
 
-  const handleTabChange = (tab: "dharma" | "karma" | "moksha" | "yoga") => {
+  const handleSlideChange = (index: number) => {
     playClick();
-    setActiveTab(tab);
-    router.replace(`/knowledge?tab=${tab}`);
+    setActiveSlide(index);
+    router.replace(`/knowledge?tab=${CONCEPT_IDS[index]}`);
   };
 
-  const activeData = CONCEPTS[activeTab];
+  const nextSlide = () => {
+    const nextIdx = (activeSlide + 1) % CONCEPT_IDS.length;
+    handleSlideChange(nextIdx);
+  };
 
-  const tabList = [
-    { id: "dharma", label: "Dharma", icon: <Sparkles className="w-4 h-4" /> },
-    { id: "karma", label: "Karma", icon: <Activity className="w-4 h-4" /> },
-    { id: "moksha", label: "Moksha", icon: <Key className="w-4 h-4" /> },
-    { id: "yoga", label: "Yoga", icon: <Flame className="w-4 h-4" /> }
-  ] as const;
+  const prevSlide = () => {
+    const prevIdx = (activeSlide - 1 + CONCEPT_IDS.length) % CONCEPT_IDS.length;
+    handleSlideChange(prevIdx);
+  };
+
+  const handleExploreClick = () => {
+    playOm();
+    setIsDetailOpen(true);
+  };
+
+  const activeId = CONCEPT_IDS[activeSlide];
+  const activeData = CONCEPTS[activeId];
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#050508] text-[#F5F0E8] select-text">
-      
+    <div className="flex flex-col min-h-screen bg-[#FAF7F0] text-[#2C221E] select-text relative">
       <Breadcrumb items={[{ label: "Knowledge" }]} />
       
-      {/* Hero Header */}
-      <section className="w-full pt-4 pb-8 px-4 text-center max-w-4xl mx-auto">
-        <h1 className="text-4xl md:text-5xl font-serif font-bold bg-gradient-to-r from-[#B8860B] via-[#FFD700] to-[#B8860B] bg-clip-text text-transparent leading-normal tracking-wide">
-          चतुर्विध पुरुषार्थ
-        </h1>
-        <h2 className="text-lg md:text-xl text-[#9CA3AF] mt-2 font-serif">
-          The Pillars of Vedic Life and Philosophy
-        </h2>
-        <p className="text-xs md:text-sm text-[#9CA3AF] mt-4 leading-relaxed max-w-2xl mx-auto">
-          Delve into the core systems of cosmic order, moral duties, action, meditation, and ultimate liberation that form the basis of Sanatan Dharma.
-        </p>
-      </section>
+      {/* Main Fullscreen Slider Content */}
+      <div className="flex-grow flex items-center relative py-6 select-none">
+        
+        {/* Left Arrow */}
+        <button
+          onClick={prevSlide}
+          className="absolute left-4 z-20 p-3 rounded-full border border-[#2C221E]/15 hover:bg-[#2C221E]/5 transition-all cursor-pointer outline-none bg-white/20 backdrop-blur-sm shadow-sm"
+        >
+          <ChevronLeft className="w-6 h-6 text-[#2C221E]/75" />
+        </button>
 
-      {/* Tab Switcher */}
-      <div className="flex justify-center border-b border-[#B8860B15] pb-1 max-w-md mx-auto w-full px-4 mb-10">
-        {tabList.map((tab) => {
-          const isActive = activeTab === tab.id;
+        {/* Right Arrow */}
+        <button
+          onClick={nextSlide}
+          className="absolute right-4 z-20 p-3 rounded-full border border-[#2C221E]/15 hover:bg-[#2C221E]/5 transition-all cursor-pointer outline-none bg-white/20 backdrop-blur-sm shadow-sm"
+        >
+          <ChevronRight className="w-6 h-6 text-[#2C221E]/75" />
+        </button>
+
+        {/* Dynamic Concept Panel Grid */}
+        <div className="max-w-6xl mx-auto w-full px-8 md:px-16 grid grid-cols-1 md:grid-cols-12 gap-8 items-center min-h-[calc(100vh-220px)]">
+          
+          {/* Left Side: Double Exposure Art Frame */}
+          <div className="col-span-12 md:col-span-6 flex justify-center items-center">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeId}
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.5 }}
+                className="w-full max-w-[420px] h-[340px] md:h-[500px] border border-[#B8860B]/25 outline outline-1 outline-offset-4 outline-[#B8860B]/15 rounded-lg overflow-hidden relative shadow-[0_15px_45px_rgba(44,34,30,0.15)] bg-[#F3ECE0]"
+              >
+                {/* Soft gradient mask mimicking the double-exposure style */}
+                <div className="absolute inset-0 bg-radial-gradient(circle at center, transparent 30%, #FAF7F0 100%) z-10 pointer-events-none mix-blend-multiply opacity-25" />
+                
+                <Image
+                  src={activeData.image}
+                  alt={activeData.titleEnglish}
+                  fill
+                  priority
+                  sizes="(max-width: 768px) 100vw, 450px"
+                  className="object-cover object-center filter brightness-[0.98] saturate-[1.05] transition-transform duration-1000"
+                />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Right Side: Clean Typography Narrative */}
+          <div className="col-span-12 md:col-span-6 flex flex-col justify-center items-start text-left pl-0 md:pl-8">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeId}
+                initial={{ opacity: 0, x: 25 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -25 }}
+                transition={{ duration: 0.4 }}
+                className="flex flex-col items-start w-full"
+              >
+                {/* Cursive Subhead / Sanskrit tag */}
+                <div className="flex flex-col gap-0.5">
+                  <span className="font-sanskrit text-lg font-bold text-[#8C2D19] leading-none text-sanskrit font-normal">
+                    चतुर्विध पुरुषार्थ — {activeData.titleSanskrit}
+                  </span>
+                  <p className="font-cursive text-2xl text-[#b8860b] leading-none mt-1 select-none">
+                    {activeData.cursiveSubhead}
+                  </p>
+                </div>
+
+                {/* Main Heading */}
+                <h1 className="font-serif text-5xl md:text-7xl font-black tracking-widest text-[#2C221E] uppercase leading-none mt-3 mb-4 select-all">
+                  {activeData.titleEnglish}
+                </h1>
+
+                {/* Thin golden divider */}
+                <div className="w-24 h-[1.5px] bg-[#B8860B]/40 mb-6" />
+
+                {/* Summary */}
+                <p className="font-serif text-sm md:text-base text-[#5c524e] leading-relaxed max-w-md mb-8 select-text">
+                  {activeData.summary}
+                </p>
+
+                {/* Outlined Action Button */}
+                <button
+                  onClick={handleExploreClick}
+                  className="px-6 py-2.5 border-2 border-[#2C221E] hover:bg-[#2C221E] hover:text-[#FAF7F0] rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-300 cursor-pointer outline-none shadow-sm"
+                >
+                  Explore Concept
+                </button>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Slide Pagination Indicators */}
+      <div className="flex gap-4 justify-center py-4 select-none z-10">
+        {CONCEPT_IDS.map((id, index) => {
+          const isActive = activeSlide === index;
           return (
             <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={`flex-grow flex items-center justify-center gap-1.5 py-3 text-xs md:text-sm font-semibold uppercase tracking-wider transition-all border-b-2 cursor-pointer outline-none
-                ${isActive
-                  ? "border-[#FFD700] text-[#FFD700] font-bold"
-                  : "border-transparent text-[#9CA3AF] hover:text-white"
-                }`}
+              key={id}
+              onClick={() => handleSlideChange(index)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[9px] uppercase font-bold tracking-wider transition-all duration-300 cursor-pointer outline-none ${
+                isActive
+                  ? "bg-[#2C221E] border-[#2C221E] text-[#FAF7F0] scale-105 shadow-sm"
+                  : "bg-transparent border-[#2C221E]/15 text-[#2C221E]/60 hover:text-[#2C221E] hover:border-[#2C221E]/30"
+              }`}
             >
-              {tab.icon}
-              <span>{tab.label}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+              {id}
             </button>
           );
         })}
       </div>
 
-      {/* Philosophy Main Content */}
-      <main className="flex-grow max-w-4xl mx-auto px-4 w-full pb-20">
-        <div 
-          className="bg-[#0F0F14] border border-[#B8860B20] rounded-2xl p-6 md:p-10 shadow-[0_12px_40px_rgba(0,0,0,0.8)] relative overflow-hidden transition-all duration-500"
-          style={{ borderLeft: `4px solid ${activeData.accentColor}` }}
-        >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#B8860B03] rounded-full blur-3xl pointer-events-none" />
+      {/* Slide-Up Detail Canvas Panel (AnimatePresence) */}
+      <AnimatePresence>
+        {isDetailOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md overflow-y-auto p-4"
+          >
+            {/* Backdrop click close */}
+            <div className="absolute inset-0 cursor-default" onClick={() => setIsDetailOpen(false)} />
 
-          {/* Sanskrit Header Title */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left gap-1 mb-8">
-            <span className="font-sanskrit text-4xl md:text-5xl text-[#FFD700] font-bold tracking-wide drop-shadow-md">
-              {activeData.titleSanskrit}
-            </span>
-            <h3 className="text-2xl md:text-3xl text-white font-serif font-bold uppercase tracking-wider">
-              {activeData.titleEnglish}
-            </h3>
-          </div>
+            {/* Content Body Canvas */}
+            <motion.div
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "100%", opacity: 0 }}
+              transition={{ type: "spring", damping: 30, stiffness: 220 }}
+              className="bg-[#FAF7F0] border-2 border-[#B8860B]/40 outline outline-1 outline-offset-4 outline-[#B8860B]/20 max-w-4xl w-full p-6 md:p-10 overflow-hidden relative text-left z-10 max-h-[92vh] overflow-y-auto rounded-xl shadow-[0_25px_60px_rgba(0,0,0,0.5)]"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setIsDetailOpen(false)}
+                className="absolute top-4 right-4 p-2 rounded-full hover:bg-black/5 text-[#2C221E]/70 hover:text-black transition-colors cursor-pointer border border-transparent hover:border-[#B8860B]/40"
+              >
+                <X className="w-5 h-5" />
+              </button>
 
-          {/* Sanskrit Shloka Block */}
-          <div className="bg-black/40 border border-[#B8860B25] rounded-xl p-5 md:p-8 flex flex-col items-center text-center gap-4 mb-8">
-            <span className="text-[10px] text-[#B8860B] uppercase font-mono tracking-widest">Sanskrit Shloka</span>
-            <p className="font-sanskrit text-[#FFD700] text-xl md:text-2xl leading-loose whitespace-pre-line drop-shadow-md">
-              {activeData.shloka}
-            </p>
-            <p className="text-[#9CA3AF] text-xs md:text-sm leading-relaxed italic border-t border-[#B8860B15] pt-4 w-full">
-              {activeData.transliteration}
-            </p>
-          </div>
+              <div className="flex flex-col gap-6 mt-4">
+                
+                {/* Header */}
+                <div className="border-b border-[#B8860B]/20 pb-5 mb-3 flex flex-col gap-1.5 text-left">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] uppercase font-bold tracking-widest text-[#8C2D19] font-mono">
+                      {activeData.titleEnglish}
+                    </span>
+                    <span className="text-[10px] text-gray-500 font-mono">
+                      Pillar {activeSlide + 1} of 4
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-baseline gap-3 mt-1.5 flex-wrap">
+                    <h2 className="font-serif text-3xl font-black text-[#2C221E] uppercase tracking-wide">
+                      {activeData.titleEnglish}
+                    </h2>
+                    <h3 className="font-sanskrit text-xl text-[#8C2D19] text-sanskrit font-bold">
+                      {activeData.titleSanskrit}
+                    </h3>
+                  </div>
 
-          {/* Translations */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 select-text">
-            <div className="bg-black/20 border border-[#B8860B10] rounded-xl p-5">
-              <h4 className="text-[#B8860B] text-xs font-mono uppercase tracking-wider mb-2">हिंदी अनुवाद</h4>
-              <p className="text-sm text-[#F5F0E8] leading-relaxed">
-                {activeData.translationHindi}
-              </p>
-            </div>
-            <div className="bg-black/20 border border-[#B8860B10] rounded-xl p-5">
-              <h4 className="text-[#B8860B] text-xs font-mono uppercase tracking-wider mb-2">English Translation</h4>
-              <p className="text-sm text-[#F5F0E8] leading-relaxed">
-                {activeData.translationEnglish}
-              </p>
-            </div>
-          </div>
-
-          {/* Conceptual Summary */}
-          <div className="border-t border-[#B8860B15] pt-6 mb-8">
-            <h4 className="text-white text-base font-serif font-bold mb-3">Philosophical Concept</h4>
-            <p className="text-[#9CA3AF] text-sm md:text-base leading-relaxed">
-              {activeData.summary}
-            </p>
-          </div>
-
-          {/* Columns/Pillars/Divisions */}
-          <div>
-            <h4 className="text-white text-base font-serif font-bold mb-4">Core Pillars & Classifications</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {activeData.pillars.map((pillar, idx) => (
-                <div key={idx} className="bg-black/40 border border-[#B8860B15] hover:border-[#FFD70040] rounded-xl p-4 transition-all duration-300">
-                  <span className="text-[#FFD700] text-sm font-semibold block">{pillar.title}</span>
-                  <p className="text-[#9CA3AF] text-xs leading-relaxed mt-1">
-                    {pillar.desc}
+                  <p className="font-cursive text-2xl text-[#b8860b] leading-none mt-1 select-none">
+                    {activeData.cursiveSubhead}
                   </p>
                 </div>
-              ))}
-            </div>
-          </div>
 
-        </div>
-      </main>
+                {/* Sanskrit Shloka Block */}
+                <div className="bg-[#F3ECE0] border border-[#B8860B]/25 rounded-2xl p-6 md:p-8 flex flex-col items-center text-center gap-4 mb-2 shadow-inner">
+                  <span className="text-[9px] text-[#b8860b] uppercase font-mono tracking-widest">Sanskrit Shloka</span>
+                  <p className="font-sanskrit text-[#8C2D19] text-2xl md:text-3xl leading-loose whitespace-pre-line text-sanskrit font-bold drop-shadow-sm">
+                    {activeData.shloka}
+                  </p>
+                  <p className="text-[#5c524e] text-xs md:text-sm leading-relaxed italic border-t border-[#B8860B]/15 pt-4 w-full font-serif">
+                    {activeData.transliteration}
+                  </p>
+                </div>
+
+                {/* Translation Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2 text-left">
+                  <div className="bg-[#F3ECE0]/50 border border-[#B8860B]/15 rounded-xl p-5 shadow-sm">
+                    <h4 className="text-[#8C2D19] text-xs font-mono uppercase tracking-wider mb-2 font-bold">हिंदी अनुवाद</h4>
+                    <p className="text-sm text-[#2C221E] leading-relaxed font-serif">
+                      {activeData.translationHindi}
+                    </p>
+                  </div>
+                  <div className="bg-[#F3ECE0]/50 border border-[#B8860B]/15 rounded-xl p-5 shadow-sm">
+                    <h4 className="text-[#8C2D19] text-xs font-mono uppercase tracking-wider mb-2 font-bold">English Translation</h4>
+                    <p className="text-sm text-[#2C221E] leading-relaxed font-serif">
+                      {activeData.translationEnglish}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Detailed Summary */}
+                <div className="border-t border-[#B8860B]/15 pt-6 text-left">
+                  <h4 className="text-[#2C221E] text-base font-serif font-bold mb-3 flex items-center gap-1.5">
+                    <BookOpen className="w-4 h-4 text-[#8C2D19]" />
+                    Philosophical Concept Summary
+                  </h4>
+                  <p className="text-[#5c524e] text-sm md:text-base leading-relaxed font-serif">
+                    {activeData.summary}
+                  </p>
+                </div>
+
+                {/* Pillars / Divisions Grid */}
+                <div className="border-t border-[#B8860B]/15 pt-6 text-left">
+                  <h4 className="text-[#2C221E] text-base font-serif font-bold mb-4 flex items-center gap-1.5">
+                    <Quote className="w-4 h-4 text-[#8C2D19]" />
+                    Core Pillars &amp; Divisions
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {activeData.pillars.map((pillar, i) => (
+                      <div key={i} className="bg-[#F3ECE0]/40 border border-[#B8860B]/15 hover:border-[#8C2D19]/40 rounded-xl p-4 transition-all duration-300">
+                        <span className="text-[#8C2D19] text-sm font-bold block font-serif">{pillar.title}</span>
+                        <p className="text-[#5c524e] text-xs leading-relaxed mt-1 font-serif">
+                          {pillar.desc}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Footer />
     </div>
@@ -235,8 +392,8 @@ function KnowledgePageContent() {
 export default function KnowledgePage() {
   return (
     <Suspense fallback={
-      <div className="flex flex-col min-h-screen bg-[#050508] text-[#F5F0E8] items-center justify-center">
-        <span className="text-[#FFD700] font-sanskrit text-2xl animate-pulse">ॐ</span>
+      <div className="flex flex-col min-h-screen bg-[#FAF7F0] text-[#2C221E] items-center justify-center">
+        <span className="text-[#8C2D19] font-sanskrit text-2xl animate-pulse">ॐ</span>
       </div>
     }>
       <KnowledgePageContent />
