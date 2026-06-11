@@ -131,7 +131,7 @@ export default function TemplesPage() {
       // 5. Region / State classification
       let matchesRegion = true;
       if (regionFilter !== "all") {
-        const north = ["uttarakhand", "jammu & virginia", "jammu & kashmir", "jammu", "kashmir", "himachal pradesh"];
+        const north = ["uttarakhand", "jammu & kashmir", "jammu", "kashmir", "himachal pradesh"];
         const south = ["tamil nadu", "andhra pradesh", "karnataka", "kerala"];
         const west = ["gujarat", "maharashtra", "rajasthan"];
         const east = ["odisha", "assam", "west bengal"];
@@ -217,7 +217,7 @@ export default function TemplesPage() {
             </div>
           ) : (
             <AtlasInteractiveMap
-              places={places}
+              places={filteredPlaces}
               selectedPlace={activeSelectedPlace}
               onPlaceSelect={(p) => { playSuccess(); setSelectedPlace(p); }}
               activeFilter={activeFilter}
