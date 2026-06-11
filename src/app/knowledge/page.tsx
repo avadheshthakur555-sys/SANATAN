@@ -3,11 +3,18 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, X, BookOpen, Quote } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, BookOpen, Quote, Scroll } from "lucide-react";
 import Footer from "@/components/layout/Footer";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { useSacredSound } from "@/lib/sacred-audio";
 import { motion, AnimatePresence } from "framer-motion";
+
+interface ConceptSection {
+  subtitle: string;
+  subtitleSanskrit?: string;
+  content: string;
+  items?: { title: string; desc: string }[];
+}
 
 interface ConceptData {
   titleSanskrit: string;
@@ -21,6 +28,10 @@ interface ConceptData {
   accentColor: string;
   image: string; // Double exposure image path
   cursiveSubhead: string;
+  deepDive: {
+    title: string;
+    sections: ConceptSection[];
+  };
 }
 
 const CONCEPTS: Record<string, ConceptData> = {
@@ -40,7 +51,35 @@ const CONCEPTS: Record<string, ConceptData> = {
       { title: "Dana (Charity)", desc: "Generosity and sharing of resources to uplift others." },
       { title: "Shaucha (Purity)", desc: "Cleanliness of body, mind, intellect, and spiritual intent." }
     ],
-    accentColor: "#FFD700"
+    accentColor: "#FFD700",
+    deepDive: {
+      title: "शास्त्रीय विवेचन एवं आचरण (Scriptural Treatise & Conduct)",
+      sections: [
+        {
+          subtitle: "Vedic Classifications of Dharma",
+          subtitleSanskrit: "धर्म-वर्गीकरण",
+          content: "Dharma is not static; it is multidimensional and scales from the universal to the deeply personal, adapting to cosmic cycles and individual capacities.",
+          items: [
+            { title: "Sanatana Dharma (सनातन धर्म)", desc: "The eternal, universal laws (truth, non-violence, purity, compassion) that apply to all living souls across time." },
+            { title: "Svadharma (स्वधर्म)", desc: "Personal duty unique to an individual's innate nature (Guna) and life circumstances." },
+            { title: "Varnashrama Dharma (वर्णाश्रम धर्म)", desc: "Duties aligned with one's psychological temperament (Varna) and stage of life (Ashrama: Student, Householder, Hermit, Renunciate)." },
+            { title: "Yuga Dharma (युग धर्म)", desc: "The spiritual practices recommended and most effective for the current cosmic era (e.g., Nama-Sankirtana in Kali Yuga)." },
+            { title: "Apad-dharma (आपद्धर्म)", desc: "Exceptional conduct permitted during emergencies or extreme life-threatening distress." }
+          ]
+        },
+        {
+          subtitle: "Pursuing and Protecting Dharma",
+          subtitleSanskrit: "धर्मो रक्षति रक्षितः",
+          content: "The Upanishads and Epics proclaim 'धर्मो रक्षति रक्षितः' (Dharma protects those who protect it). To protect Dharma, we must live it. It is not defended by arguments, but preserved through practice in daily life.",
+          items: [
+            { title: "Satyam Vada (सत्यभाषण)", desc: "Speaking the truth with kindness. Sages say: speak truth, speak what is pleasing, but do not speak truth harshly." },
+            { title: "Mitahara (मिताहार)", desc: "Pure, moderate, and plant-based nutrition that keeps the physical body and subtle mind clean and calm." },
+            { title: "Ishvara Pranidhana (ईश्वर-प्रणिधान)", desc: "Regular prayer, self-study (Svadhyaya), and daily remembrance of the divine spark in all beings." },
+            { title: "Seva (निःस्वार्थ सेवा)", desc: "Offering selfless service to uplift society, care for the needy, and protect nature." }
+          ]
+        }
+      ]
+    }
   },
   karma: {
     titleSanskrit: "कर्म",
@@ -58,7 +97,42 @@ const CONCEPTS: Record<string, ConceptData> = {
       { title: "Agami Karma", desc: "The actions being performed now that will bear fruit in the future." },
       { title: "Nishkama Karma", desc: "Selfless action performed without attachment to personal reward." }
     ],
-    accentColor: "#F97316"
+    accentColor: "#F97316",
+    deepDive: {
+      title: "कर्म सिद्धान्त एवं वेदोक्त रहस्य (The Law of Action & Vedic Wisdom)",
+      sections: [
+        {
+          subtitle: "Vedic Classifications of Actions",
+          subtitleSanskrit: "कर्म के वेदोक्त भेद",
+          content: "The Vedas classify all human actions based on their nature, intent, and impact on the individual's spiritual consciousness.",
+          items: [
+            { title: "Nitya Karma (नित्य कर्म)", desc: "Daily obligatory duties (e.g., cleanliness, morning prayers, meditation) that purify the mind without creating ego." },
+            { title: "Naimittika Karma (नैमित्तिक कर्म)", desc: "Duties performed on specific occasions (e.g., festivals, life transitions, ancestral rites) to align with cosmic forces." },
+            { title: "Kamya Karma (काम्य कर्म)", desc: "Optional desire-driven actions performed with the goal of gaining specific fruits, material success, or heavenly births." },
+            { title: "Nishiddha Karma (निषिद्ध कर्म)", desc: "Prohibited actions that degrade human consciousness and harm other living entities." }
+          ]
+        },
+        {
+          subtitle: "The Time Horizon of Karma",
+          subtitleSanskrit: "त्रिविध कर्माणि",
+          content: "Every action leaves a subtle impression (Samskara) in the causal body, which matures over lifetimes according to three cosmic phases.",
+          items: [
+            { title: "Sanchita Karma (सञ्चित)", desc: "The total accumulated storehouse of all thoughts and actions from past lifetimes, waiting to ripen." },
+            { title: "Prarabdha Karma (प्रारब्ध)", desc: "The allocated portion of past actions currently playing out as destiny, determining birth, life span, and basic tendencies." },
+            { title: "Kriyamana/Agami Karma (क्रियमाण)", desc: "The fresh actions being performed in this moment, utilizing our free will to shape future destiny." }
+          ]
+        },
+        {
+          subtitle: "Nishkama Karma in Daily Life",
+          subtitleSanskrit: "फल-आसक्ति त्याग",
+          content: "In Bhagavad Gita, Krishna teaches Nishkama Karma: performing actions as an offering without attachment to outcomes. Real-life analogy: A gardener nurtures, waters, and weeds the soil. They cannot command the rain, the sun, or the timing of the fruit. By focusing entirely on the quality of their effort and accepting the harvest gracefully, they remain peaceful and free from stress.",
+          items: [
+            { title: "Duty as Worship", desc: "Treating your profession or daily task as an offering to the Divine (Karma Yoga)." },
+            { title: "Acceptance (Prasada Buddhi)", desc: "Accepting whatever result comes with a peaceful mind, viewing it as a divine gift." }
+          ]
+        }
+      ]
+    }
   },
   moksha: {
     titleSanskrit: "मोक्ष",
@@ -76,7 +150,39 @@ const CONCEPTS: Record<string, ConceptData> = {
       { title: "Mumukshutva (Yearning)", desc: "An intense desire for spiritual liberation and self-realization." },
       { title: "Sadhana (Practice)", desc: "Persistent spiritual effort through meditation, devotion, or wisdom." }
     ],
-    accentColor: "#E9D5FF"
+    accentColor: "#E9D5FF",
+    deepDive: {
+      title: "मोक्ष प्राप्ति के मार्ग एवं सोपान (Paths & Stages of Spiritual Liberation)",
+      sections: [
+        {
+          subtitle: "The Four Margas to Liberation",
+          subtitleSanskrit: "मोक्ष के चार मार्ग",
+          content: "The sages prescribed four distinct paths of yoga to suit different temperaments, all converging on the single goal of ultimate liberation.",
+          items: [
+            { title: "Jnana Marga (ज्ञान मार्ग)", desc: "The path of intellectual inquiry and contemplation. Meditating on the self (Atman) vs. the non-self, discarding temporary identities." },
+            { title: "Bhakti Marga (भक्ति मार्ग)", desc: "The path of emotional surrender. Channeling all human feelings into absolute love, prayer, and devotion to the Divine." },
+            { title: "Karma Marga (कर्म मार्ग)", desc: "The path of action. Purifying the heart by performing all duties selflessly as a service to God and humanity." },
+            { title: "Raja Marga (राज मार्ग)", desc: "The path of meditation. Scientific restraint of the mind through breath regulation (Pranayama) and deep concentration." }
+          ]
+        },
+        {
+          subtitle: "The Four Stages of Liberation",
+          subtitleSanskrit: "सायुज्यादि चतुष्टय",
+          content: "Traditional philosophy describes four experiences of liberation that a seeker can attain as they align closer with the Supreme Reality.",
+          items: [
+            { title: "Salokya (सालोक्य)", desc: "Attaining the state of dwelling in the same spiritual realm or state of consciousness as the Divine." },
+            { title: "Sameepya (सामीप्य)", desc: "Living in constant, intimate proximity and divine presence of the Supreme." },
+            { title: "Saroopya (सारूप्य)", desc: "Acquiring the divine form, spiritual qualities, and attributes of the Lord." },
+            { title: "Sayujya (सायुज्य)", desc: "The absolute merging and complete union of the individual soul (Jivatman) with the Supreme (Brahman)." }
+          ]
+        },
+        {
+          subtitle: "The River and the Ocean",
+          subtitleSanskrit: "नदी-सागर न्याय",
+          content: "To understand Moksha in real life, consider a river. It flows through valleys, turns around obstacles, and rushes forward. Yet, its journey only ends when it meets the vast ocean. Once it merges, it loses its temporary name and individual boundaries, becoming the limitless ocean itself. Moksha is the dissolution of the temporary ego into infinite, supreme bliss."
+        }
+      ]
+    }
   },
   yoga: {
     titleSanskrit: "योग",
@@ -94,7 +200,40 @@ const CONCEPTS: Record<string, ConceptData> = {
       { title: "Karma Yoga", desc: "The path of selfless action, duty, and service to humanity." },
       { title: "Raja Yoga", desc: "The path of meditation, breath control, and eight-fold mental discipline." }
     ],
-    accentColor: "#3B82F6"
+    accentColor: "#3B82F6",
+    deepDive: {
+      title: "योग शास्त्र एवं अष्टाङ्ग योग (Yogic Science & The Eightfold Path)",
+      sections: [
+        {
+          subtitle: "The Eight Limbs of Classical Yoga",
+          subtitleSanskrit: "अष्टाङ्ग योग सोपान",
+          content: "Sage Patanjali laid out a systematic eight-step path to quiet the mind's fluctuations and achieve self-realization.",
+          items: [
+            { title: "Yama & Niyama (यम-नियम)", desc: "Moral restraints (Non-violence, Truth, Non-stealing, Purity, Contentment) and spiritual practices (Self-discipline, Scriptural Study, Devotion)." },
+            { title: "Asana & Pranayama (आसन-प्राणायाम)", desc: "Steady, comfortable physical postures and breath regulation to stabilize prana and calm the nervous system." },
+            { title: "Pratyahara & Dharana (प्रत्याहार-धारणा)", desc: "Withdrawal of the senses from external objects, followed by single-pointed concentration." },
+            { title: "Dhyana & Samadhi (ध्यान-समाधि)", desc: "Unbroken meditation flow, culminating in absolute absorption and unity with universal consciousness." }
+          ]
+        },
+        {
+          subtitle: "Major Asanas and Daily Life Benefits",
+          subtitleSanskrit: "आसन-विज्ञान एवं लाभ",
+          content: "Asanas are designed to prepare the physical body for sitting in quiet contemplation while restoring health, flexibility, and vital balance.",
+          items: [
+            { title: "Padmasana (पद्मासन - Lotus Pose)", desc: "Stabilizes body posture, aligns the spine, grounds the mind, and channels energy upward for deep meditation." },
+            { title: "Surya Namaskar (सूर्यनमस्कार - Sun Salutation)", desc: "A sequence of 12 postures that energizes the body, improves circulation, and balances vital energy channels (Nadis)." },
+            { title: "Bhujangasana (भुजङ्गासन - Cobra Pose)", desc: "Strengthens the spine, opens the chest, and relieves respiratory tension and fatigue." },
+            { title: "Tadasana (ताड़ासन - Mountain Pose)", desc: "Improves balance, posture, skeletal alignment, and promotes mental grounding and focus." },
+            { title: "Savasana (शवासन - Corpse Pose)", desc: "Induces complete neuromuscular relaxation, integrates benefits of practice, and teaches conscious surrender." }
+          ]
+        },
+        {
+          subtitle: "Yoga Beyond the Mat",
+          subtitleSanskrit: "योगः कर्मसु कौशलम्",
+          content: "Yoga is not just physical flexibility. Bhagavad Gita defines it as 'योगः कर्मसु कौशलम्' (Yoga is skill in action). It means bringing calm, focused awareness to every act in daily life—responding to challenges with clarity instead of reacting in anger or anxiety."
+        }
+      ]
+    }
   }
 };
 
@@ -377,6 +516,52 @@ function KnowledgePageContent() {
                     ))}
                   </div>
                 </div>
+
+                {/* Deep Dive & Practical Conduct */}
+                {activeData.deepDive && (
+                  <div className="border-t border-[#B8860B]/15 pt-6 text-left">
+                    <h4 className="text-[#2C221E] text-base font-serif font-bold mb-5 flex items-center gap-1.5">
+                      <Scroll className="w-4 h-4 text-[#8C2D19]" />
+                      {activeData.deepDive.title}
+                    </h4>
+                    
+                    <div className="flex flex-col gap-6">
+                      {activeData.deepDive.sections.map((section, idx) => (
+                        <div key={idx} className="bg-[#F3ECE0]/30 border border-[#B8860B]/15 rounded-2xl p-5 md:p-6 shadow-sm">
+                          <div className="flex items-baseline gap-2 border-b border-[#B8860B]/15 pb-2 mb-3 flex-wrap">
+                            <h5 className="font-serif text-sm md:text-base font-bold text-[#8C2D19]">
+                              {section.subtitle}
+                            </h5>
+                            {section.subtitleSanskrit && (
+                              <span className="font-sanskrit text-xs text-[#b8860b] font-bold ml-1.5 text-sanskrit font-normal">
+                                ({section.subtitleSanskrit})
+                              </span>
+                            )}
+                          </div>
+                          
+                          <p className="text-[#5c524e] text-xs md:text-sm leading-relaxed font-serif mb-4 whitespace-pre-line">
+                            {section.content}
+                          </p>
+
+                          {section.items && section.items.length > 0 && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+                              {section.items.map((item, itemIdx) => (
+                                <div key={itemIdx} className="bg-[#FAF7F0] border border-[#B8860B]/10 rounded-xl p-3.5 hover:shadow-sm transition-all duration-300">
+                                  <span className="text-[#8C2D19] text-xs font-bold block font-serif">
+                                    {item.title}
+                                  </span>
+                                  <p className="text-[#5c524e] text-[11px] leading-relaxed mt-1 font-serif">
+                                    {item.desc}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
               </div>
             </motion.div>
