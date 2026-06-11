@@ -652,7 +652,7 @@ export default function ScriptureDetailClient({ scripture, nextReadItems }: Scri
               </span>
               <span className="flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-sm">
                 <Award className="w-3.5 h-3.5 text-white/50" />
-                <span>{labels.verses}: <strong className="text-white">{scripture.totalVerses.toLocaleString()}</strong></span>
+                <span>{labels.verses}: <strong className="text-white">{scripture.totalVerses.toLocaleString("en-US")}</strong></span>
               </span>
             </div>
 

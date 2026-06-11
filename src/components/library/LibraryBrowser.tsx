@@ -1016,7 +1016,7 @@ const ArtifactCard = ({ scripture: s, accentColor, onRead, onDownload }: Artifac
             <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded-sm text-[#FAF7F0]" style={{ background: accentColor }}>
               {s.categoryName}
             </span>
-            <span className="text-[9px] font-mono text-[#5D4037]">{s.totalVerses.toLocaleString()} Verses</span>
+            <span className="text-[9px] font-mono text-[#5D4037]">{s.totalVerses.toLocaleString("en-US")} Verses</span>
           </div>
         </div>
 
@@ -1190,7 +1190,7 @@ const MuseumExhibitCard = ({ scripture: s, accentColor, onRead, onDownload }: Mu
             📖 {s.totalChapters} Chapters
           </span>
           <span className="text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-sm bg-[#3E2723]/5 border border-[#3E2723]/15 text-[#3E2723] dark:bg-white/5 dark:border-white/10 dark:text-white/80">
-            📜 {s.totalVerses.toLocaleString()} Shlokas
+            📜 {s.totalVerses.toLocaleString("en-US")} Shlokas
           </span>
         </div>
 
@@ -1367,7 +1367,7 @@ const ExhibitsList = ({ scriptures, layout, accentColor, onRead, onDownload }: E
                     <div className="absolute bottom-full mb-3 hidden group-hover:flex flex-col items-center w-48 p-2 bg-[#1A0A00] text-white border border-[#D4AF37]/50 rounded text-center shadow-xl z-20">
                       <span className="text-[11px] font-bold font-serif leading-tight">{s.titleEnglish}</span>
                       <span className="text-[9px] font-sanskrit text-[#D4AF37] mt-0.5">{s.titleSanskrit}</span>
-                      <span className="text-[8px] font-mono text-white/50 mt-1">{s.totalChapters} Ch | {s.totalVerses.toLocaleString()} Verses</span>
+                      <span className="text-[8px] font-mono text-white/50 mt-1">{s.totalChapters} Ch | {s.totalVerses.toLocaleString("en-US")} Verses</span>
                       <span className="text-[8px] font-mono font-bold mt-1 text-green-400">{isActive ? "AVAILABLE TO READ" : "UNDER DIGITAL RESTORATION"}</span>
                     </div>
 
@@ -1472,7 +1472,7 @@ const ExhibitsList = ({ scriptures, layout, accentColor, onRead, onDownload }: E
                   <div className="flex items-center gap-3 text-[10px] font-mono text-[#8C6914] mt-1.5">
                     <span>📚 {s.totalChapters} Chapters</span>
                     <span>•</span>
-                    <span>📜 {s.totalVerses.toLocaleString()} Shlokas</span>
+                    <span>📜 {s.totalVerses.toLocaleString("en-US")} Shlokas</span>
                   </div>
                 </div>
 
@@ -1556,7 +1556,7 @@ const ExhibitsList = ({ scriptures, layout, accentColor, onRead, onDownload }: E
                   <td className="py-3.5 px-4 font-sanskrit text-sm text-[#8C2D19]">{s.titleSanskrit}</td>
                   <td className="py-3.5 px-4 font-mono text-[10px] text-[#8D6E63] uppercase">{s.categoryName}</td>
                   <td className="py-3.5 px-4 font-mono">{s.totalChapters}</td>
-                  <td className="py-3.5 px-4 font-mono">{s.totalVerses.toLocaleString()}</td>
+                  <td className="py-3.5 px-4 font-mono">{s.totalVerses.toLocaleString("en-US")}</td>
                   <td className="py-3.5 px-4 font-mono text-[10px]">{s.languages.join(", ")}</td>
                   <td className="py-3.5 px-4">
                     <span className={`px-2 py-0.5 rounded-sm text-[9px] font-mono uppercase ${

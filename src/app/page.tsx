@@ -1132,7 +1132,7 @@ export default function Home() {
                   {currentLang === "EN" ? "Years History" : currentLang === "HI" ? "वर्षों का इतिहास" : "वर्षाणि"}
                 </span>
                 <span className="text-base font-bold text-gold font-mono tracking-tight drop-shadow-[0_0_8px_rgba(245,194,66,0.3)]">
-                  {currentLang === "EN" ? `${counts.years}+` : `${counts.years.toLocaleString()}+`}
+                  {currentLang === "EN" ? `${counts.years}+` : `${counts.years.toLocaleString("en-US")}+`}
                 </span>
               </div>
               <div className="h-px w-full bg-gradient-to-r from-[#F5C242]/10 via-[#F5C242]/30 to-[#F5C242]/10" />
@@ -1466,7 +1466,7 @@ export default function Home() {
               {activeT.currentSamvat}
             </span>
             <div className="text-xl font-extrabold text-gold font-mono mt-1 tracking-wide">
-              {cosmicTime.vikramSamvat.toLocaleString()}
+              {cosmicTime.vikramSamvat.toLocaleString("en-US")}
             </div>
           </motion.div>
 

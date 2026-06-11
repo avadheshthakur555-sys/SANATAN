@@ -30,7 +30,7 @@ const AnimatedCount = memo(({ target, label, suffix = "" }: { target: number; la
   return (
     <div className="flex flex-col items-center px-4 md:px-6">
       <span className="font-heading text-lg md:text-xl font-extrabold text-[var(--accent-saffron)]">
-        {count.toLocaleString()}{suffix}
+        {count.toLocaleString("en-US")}{suffix}
       </span>
       <span className="text-[10px] md:text-xs text-[var(--text-secondary)] font-semibold uppercase tracking-wider mt-[2px]">
         {label}

@@ -57,7 +57,7 @@ const StatItem = memo<StatItemProps>(({ icon, targetNumber, suffix = "", label }
     >
       <span className="text-[32px] mb-phi-xs drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)]">{icon}</span>
       <span className="font-heading text-phi-xl md:text-phi-2xl font-extrabold text-[var(--accent-gold)]">
-        {count > 0 ? count.toLocaleString() : "0"}{suffix}
+        {count > 0 ? count.toLocaleString("en-US") : "0"}{suffix}
       </span>
       <span className="text-phi-xs md:text-phi-sm text-[var(--text-secondary)] font-semibold mt-[2px] uppercase tracking-wider">
         {label}
