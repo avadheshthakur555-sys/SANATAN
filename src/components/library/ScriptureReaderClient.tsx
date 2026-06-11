@@ -52,6 +52,20 @@ export default function ScriptureReaderClient({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [copiedVerseId, setCopiedVerseId] = useState<string | null>(null);
   const [bookmarkedVerses, setBookmarkedVerses] = useState<Record<string, boolean>>({});
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        const stored = localStorage.getItem("sanatan-bookmarked-verses");
+        if (stored) {
+          setBookmarkedVerses(JSON.parse(stored));
+        }
+      } catch (e) {
+        console.error("Failed to load bookmarks", e);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
   
   // Custom display settings
   const [textSize, setTextSize] = useState<"sm" | "base" | "lg" | "xl">("base");
@@ -102,10 +116,18 @@ export default function ScriptureReaderClient({
 
   const handleBookmarkVerse = (id: string) => {
     playSuccess();
-    setBookmarkedVerses(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
+    setBookmarkedVerses(prev => {
+      const updated = {
+        ...prev,
+        [id]: !prev[id]
+      };
+      try {
+        localStorage.setItem("sanatan-bookmarked-verses", JSON.stringify(updated));
+      } catch (e) {
+        console.error("Failed to save bookmarks", e);
+      }
+      return updated;
+    });
   };
 
   const handleShareVerse = (v: VerseData) => {
