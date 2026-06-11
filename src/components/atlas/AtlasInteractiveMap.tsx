@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Compass, MapPin, Navigation, ArrowRight, Eye, Search, Locate, ShieldAlert, Landmark } from "lucide-react";
+import { Compass, Navigation, ArrowRight, Locate, ShieldAlert, Landmark } from "lucide-react";
 import { useSacredSound } from "@/lib/sacred-audio";
 
 interface SacredPlace {
@@ -50,7 +50,6 @@ export default function AtlasInteractiveMap({
   places,
   selectedPlace,
   onPlaceSelect,
-  activeFilter,
   activeRoute
 }: AtlasInteractiveMapProps) {
   const { playClick, playSuccess } = useSacredSound();
@@ -581,7 +580,7 @@ export default function AtlasInteractiveMap({
             {mapProvider === "google" && !userCoords && !geoLoading && (
               <div className="absolute top-4 left-4 right-4 bg-yellow-950/70 border border-yellow-800/40 rounded-xl p-2.5 backdrop-blur-md z-30 flex items-center gap-2 text-[10px] text-yellow-300">
                 <ShieldAlert className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
-                <span><strong>No Geolocation:</strong> Enable location access to show nearby temples and distance.</span>
+                <span><strong>No Geolocation:</strong> {geoError || "Enable location access to show nearby temples and distance."}</span>
               </div>
             )}
           </div>

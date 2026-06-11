@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef, memo } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronDown, Volume2, Share2, Copy, Check, BookOpen, Download } from "lucide-react";
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
+import Image from "next/image";
+import { ChevronDown, Volume2, Share2, Copy, Check } from "lucide-react";
+import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { useSacredSound } from "@/lib/sacred-audio";
 import { useLanguageStore } from "@/store/useLanguageStore";
 
@@ -764,6 +765,22 @@ const spokesData = [
   }
 ];
 
+const SECTIONS = [
+  { id: "hero", label: "Cosmic Intro" },
+  { id: "kaal-chakra", label: "Kaal Chakra" },
+  { id: "creation", label: "The Creation" },
+  { id: "vedas", label: "The 4 Vedas" },
+  { id: "upanishads", label: "The Upanishads" },
+  { id: "gita", label: "Bhagavad Gita" },
+  { id: "epics", label: "The Epics" },
+  { id: "puranas", label: "The Puranas" },
+  { id: "deities", label: "Gods & Goddesses" },
+  { id: "tree", label: "The Dharma Tree" },
+  { id: "living", label: "Living Dharma" },
+  { id: "downloads", label: "Free Library" },
+  { id: "shloka", label: "Daily Shloka" },
+];
+
 export default function Home() {
   const [activeSection, setActiveSection] = useState("kaal-chakra");
   const [counts, setCounts] = useState({ years: 0, followers: 0, texts: 0 });
@@ -821,9 +838,10 @@ export default function Home() {
     const updateTime = () => {
       const now = new Date();
       setCosmicTime(getKaliYugaStats(now));
+      const lang = useLanguageStore.getState().language;
       setCurrentTimeStr(
         now.toLocaleString(
-          currentLang === "HI" ? "hi-IN" : currentLang === "SA" ? "sa-IN" : "en-US",
+          lang === "HI" ? "hi-IN" : lang === "SA" ? "sa-IN" : "en-US",
           {
             weekday: "long",
             year: "numeric",
@@ -839,8 +857,14 @@ export default function Home() {
     };
     updateTime();
     const interval = setInterval(updateTime, 100);
-    return () => clearInterval(interval);
-  }, [currentLang]);
+    const unsubscribe = useLanguageStore.subscribe(() => {
+      updateTime();
+    });
+    return () => {
+      clearInterval(interval);
+      unsubscribe();
+    };
+  }, []);
 
   const formatTickingNumber = (num: number) => {
     const integerPart = Math.floor(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -853,27 +877,11 @@ export default function Home() {
     );
   };
 
-  const sections = [
-    { id: "hero", label: "Cosmic Intro" },
-    { id: "kaal-chakra", label: "Kaal Chakra" },
-    { id: "creation", label: "The Creation" },
-    { id: "vedas", label: "The 4 Vedas" },
-    { id: "upanishads", label: "The Upanishads" },
-    { id: "gita", label: "Bhagavad Gita" },
-    { id: "epics", label: "The Epics" },
-    { id: "puranas", label: "The Puranas" },
-    { id: "deities", label: "Gods & Goddesses" },
-    { id: "tree", label: "The Dharma Tree" },
-    { id: "living", label: "Living Dharma" },
-    { id: "downloads", label: "Free Library" },
-    { id: "shloka", label: "Daily Shloka" },
-  ];
-
   // Active section scroll indicator tracking
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + window.innerHeight / 3;
-      for (const section of sections) {
+      for (const section of SECTIONS) {
         const el = document.getElementById(section.id);
         if (el) {
           const top = el.offsetTop;
@@ -970,7 +978,7 @@ export default function Home() {
       
       {/* Interactive Sticky Diamond Sidebar Navigation */}
       <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col gap-4 items-end">
-        {sections.map((sec) => (
+        {SECTIONS.map((sec) => (
           <a
             key={sec.id}
             href={`#${sec.id}`}
@@ -1788,7 +1796,7 @@ export default function Home() {
                               style={{ filter: "drop-shadow(0 0 6px #FFE485)" }}
                             />
                             {/* Floating sparks rising from hub along spoke */}
-                            {Array.from({ length: 6 }).map((_, i) => {
+                            {mounted && Array.from({ length: 6 }).map((_, i) => {
                               const delay = i * 0.08;
                               const startX = 200 + (Math.random() - 0.5) * 8;
                               const endX = startX + (Math.random() - 0.5) * 15;
@@ -2778,9 +2786,11 @@ export default function Home() {
                         {/* Left Column: Customized Illustration */}
                         <div className="md:col-span-4 flex justify-center">
                           <div className="relative w-full aspect-[4/3] max-w-[260px] rounded-xl overflow-hidden border border-[var(--border-gold)]/50 shadow-[0_8px_25px_rgba(0,0,0,0.25)] group">
-                            <img
+                            <Image
                               src={node.image}
                               alt={node.name}
+                              fill
+                              sizes="(max-width: 768px) 100vw, 260px"
                               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />

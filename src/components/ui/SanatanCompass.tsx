@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -202,7 +202,7 @@ export default function SanatanCompass({ isOpen, onClose }: SanatanCompassProps)
         osc.start(now);
         osc.stop(now + decays[idx] + 0.1);
       });
-    } catch (e) {
+    } catch {
       console.warn("Audio Context blocked by browser safety policy.");
     }
   };

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { Menu, X, ChevronLeft, ChevronRight, Volume2, Bookmark, Share2, Copy, Check, Settings, Eye, EyeOff, Scroll } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Volume2, Bookmark, Share2, Copy, Check, Settings, Eye, EyeOff, Scroll } from "lucide-react";
 import { useSacredSound } from "@/lib/sacred-audio";
 
 interface ChapterData {
@@ -413,7 +413,7 @@ export default function ScriptureReaderClient({
             let parsedMeanings: { word: string; iast: string; meaning_en: string; meaning_hi: string }[] = [];
             try {
               parsedMeanings = JSON.parse(verse.wordMeanings);
-            } catch (e) {
+            } catch {
               parsedMeanings = [];
             }
 
@@ -421,7 +421,7 @@ export default function ScriptureReaderClient({
             let parsedCommentaries: { author: string; text_en: string; text_hi: string }[] = [];
             try {
               parsedCommentaries = JSON.parse(verse.commentaries);
-            } catch (e) {
+            } catch {
               parsedCommentaries = [];
             }
 

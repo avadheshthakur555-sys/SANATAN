@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, memo, useEffect, useRef, startTransition } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Search, BookOpen, Download, AlertCircle, MapPin, ChevronRight, X, LayoutGrid, Landmark, Library, Scroll, List } from "lucide-react";
 import { useSacredSound } from "@/lib/sacred-audio";
@@ -1148,9 +1149,11 @@ const MuseumExhibitCard = ({ scripture: s, accentColor, onRead, onDownload }: Mu
           <div className="absolute inset-0 z-10 pointer-events-none" style={{
             background: `radial-gradient(ellipse 85% 85% at center, transparent 35%, var(--bg-primary) 100%)`
           }} />
-          <img 
+          <Image 
             src={imagePath} 
             alt={s.titleEnglish} 
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="w-full h-full object-cover select-none filter sepia-[0.05] contrast-[1.03] saturate-[1.1] group-hover:scale-105 transition-transform duration-[2000ms] mix-blend-multiply dark:mix-blend-normal dark:opacity-85"
           />
           {/* Gold banner overlay */}
@@ -1336,7 +1339,7 @@ const ExhibitsList = ({ scriptures, layout, accentColor, onRead, onDownload }: E
         {/* Wooden textures */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.15)_0%,_rgba(0,0,0,0.8)_100%)]"/>
         
-        {Object.entries(categoriesGrouped).map(([catName, list], catIdx) => (
+        {Object.entries(categoriesGrouped).map(([catName, list]) => (
           <div key={catName} className="relative w-full">
             {/* Category header hanging on shelf */}
             <div className="inline-block px-4 py-1.5 border border-[#D4AF37]/30 bg-[#1A0A00] text-[#D4AF37] font-serif text-xs uppercase tracking-widest rounded-sm mb-6 shadow-md relative z-10">
@@ -1348,7 +1351,7 @@ const ExhibitsList = ({ scriptures, layout, accentColor, onRead, onDownload }: E
               {/* Shelf top wood trim */}
               <div className="absolute bottom-0 left-0 right-0 h-2 bg-[#513018] border-t border-[#8C6914]/20" />
               
-              {list.map((s, idx) => {
+              {list.map((s) => {
                 // Dynamic sizing for books to look organic
                 const bookColors = ["#8C2D19", "#1E8449", "#1A5276", "#D4AC0D", "#7E57C2", "#3E2723", "#A11B1B", "#2E7D32"];
                 const bookColor = bookColors[s.titleEnglish.length % bookColors.length];

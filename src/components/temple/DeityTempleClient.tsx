@@ -170,7 +170,7 @@ export default function DeityTempleClient({ deity }: DeityTempleClientProps) {
         osc.start(now);
         osc.stop(now + decays[idx] + 0.1);
       });
-    } catch (e) {
+    } catch {
       console.warn("Web Audio API not supported or blocked by browser policies.");
     }
   };
@@ -255,9 +255,9 @@ export default function DeityTempleClient({ deity }: DeityTempleClientProps) {
             osc1Ref.current?.stop();
             osc2Ref.current?.stop();
             ctx.close();
-          } catch (e) {}
+          } catch {}
         }, 800);
-      } catch (e) {}
+      } catch {}
     }
     audioCtxRef.current = null;
     droneGainRef.current = null;

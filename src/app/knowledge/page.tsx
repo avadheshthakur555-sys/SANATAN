@@ -92,7 +92,7 @@ function KnowledgePageContent() {
   const tabParam = searchParams ? searchParams.get("tab") : null;
   
   const [activeTab, setActiveTab] = useState<"dharma" | "karma" | "moksha" | "yoga">("dharma");
-  const { playClick, playSuccess } = useSacredSound();
+  const { playClick } = useSacredSound();
 
   useEffect(() => {
     requestAnimationFrame(() => {

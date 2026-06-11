@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useRef } from "react";
 import Link from "next/link";
-import { Compass, Search, MapPin, Landmark, ArrowRight, Sparkles, Filter, Navigation, Calendar, BookOpen } from "lucide-react";
+import { Compass, Search, MapPin, ArrowRight, Filter, Navigation, BookOpen } from "lucide-react";
 import { useSacredSound } from "@/lib/sacred-audio";
 import Footer from "@/components/layout/Footer";
 import Breadcrumb from "@/components/ui/Breadcrumb";
@@ -83,7 +83,7 @@ export default function TemplesClient({ initialPlaces }: TemplesClientProps) {
     try {
       const parsed = JSON.parse(jsonStr);
       if (Array.isArray(parsed)) return parsed;
-    } catch (_) {}
+    } catch {}
     return ["/images/hero-temple-sanctum.png"];
   };
 

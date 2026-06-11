@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useEffect, useState, useRef, useMemo } from "react";
+import React, { memo, useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X, Book, FileText, User, Landmark, Sparkles } from "lucide-react";
 import { useSacredSound } from "@/lib/sacred-audio";
@@ -63,7 +63,7 @@ const SearchModal = memo(() => {
   const [recent, setRecent] = useState<string[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const router = useRouter();
-  const { playClick, playSuccess, playNavigate } = useSacredSound();
+  const { playClick, playNavigate } = useSacredSound();
   const modalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -90,12 +90,13 @@ const SearchModal = memo(() => {
     try {
       const stored = localStorage.getItem("recent_searches");
       if (stored) setRecent(JSON.parse(stored));
-    } catch (_) {}
+    } catch {}
 
     return () => {
       window.removeEventListener("keydown", handleGlobalKeyDown);
       window.removeEventListener("open-search", handleOpenEvent);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Focus input on open
@@ -166,6 +167,22 @@ const SearchModal = memo(() => {
     return list;
   }, [results, query]);
 
+  const handleSelectResult = useCallback((url: string, rawQuery: string) => {
+    playNavigate();
+    
+    // Save to recents
+    if (rawQuery.trim().length > 1) {
+      setRecent((prevRecent) => {
+        const updated = [rawQuery, ...prevRecent.filter((r) => r !== rawQuery)].slice(0, 5);
+        localStorage.setItem("recent_searches", JSON.stringify(updated));
+        return updated;
+      });
+    }
+
+    setIsOpen(false);
+    router.push(url);
+  }, [playNavigate, router]);
+
   // Handle active index key selection
   useEffect(() => {
     const handleKeys = (e: KeyboardEvent) => {
@@ -186,21 +203,7 @@ const SearchModal = memo(() => {
     };
     window.addEventListener("keydown", handleKeys);
     return () => window.removeEventListener("keydown", handleKeys);
-  }, [isOpen, flatResults, activeIndex, query]);
-
-  const handleSelectResult = (url: string, rawQuery: string) => {
-    playNavigate();
-    
-    // Save to recents
-    if (rawQuery.trim().length > 1) {
-      const updated = [rawQuery, ...recent.filter((r) => r !== rawQuery)].slice(0, 5);
-      setRecent(updated);
-      localStorage.setItem("recent_searches", JSON.stringify(updated));
-    }
-
-    setIsOpen(false);
-    router.push(url);
-  };
+  }, [isOpen, flatResults, activeIndex, query, handleSelectResult]);
 
   const clearRecent = () => {
     playClick();

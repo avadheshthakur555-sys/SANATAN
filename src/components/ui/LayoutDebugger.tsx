@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef, memo } from "react";
-import { AlertCircle, CheckCircle, ChevronDown, ChevronUp, Settings } from "lucide-react";
+import React, { useState, useEffect, memo } from "react";
+import { AlertCircle, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { useSacredSound } from "@/lib/sacred-audio";
 
 const LayoutDebugger = memo(() => {

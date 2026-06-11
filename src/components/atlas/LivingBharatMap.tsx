@@ -31,7 +31,6 @@ export default function LivingBharatMap({
   onPlaceSelect,
   activeFilter,
   onFilterChange,
-  clearSelection,
 }: LivingBharatMapProps) {
   const [hoveredPlace, setHoveredPlace] = useState<PlaceSummary | null>(null);
   const { playClick, playSuccess } = useSacredSound();

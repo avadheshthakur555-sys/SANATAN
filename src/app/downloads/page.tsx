@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Download, ChevronDown, ChevronRight, Search, ArrowUpDown, Info } from "lucide-react";
+import { ChevronDown, ChevronRight, Search, ArrowUpDown, Info, Clock } from "lucide-react";
 import { useSacredSound } from "@/lib/sacred-audio";
 import Footer from "@/components/layout/Footer";
 
@@ -273,12 +273,12 @@ export default function DownloadsPage() {
   });
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const { playClick, playSuccess } = useSacredSound();
+  const { playClick } = useSacredSound();
 
   const handleDownload = (scripture: ScriptureDownload, format: string) => {
-    playSuccess();
-    setToastMessage(`Downloading "${scripture.nameEnglish}" in ${format} format...`);
-    setTimeout(() => setToastMessage(null), 4000);
+    playClick();
+    setToastMessage(`"${scripture.nameEnglish}" (${format}) — Downloads coming soon. These sacred texts are being prepared for offline distribution.`);
+    setTimeout(() => setToastMessage(null), 5000);
   };
 
   const toggleCategory = (cat: string) => {
@@ -360,12 +360,13 @@ export default function DownloadsPage() {
         
         {/* Search */}
         <div className="relative w-full sm:max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search documents..."
-            className="w-full pl-4 pr-10 py-2.5 bg-[#0F0F14] border border-[#B8860B20] focus:border-[#FFD700] rounded-lg text-xs outline-none text-[#F5F0E8] placeholder-gray-500"
+            className="w-full pl-9 pr-4 py-2.5 bg-[#0F0F14] border border-[#B8860B20] focus:border-[#FFD700] rounded-lg text-xs outline-none text-[#F5F0E8] placeholder-gray-500"
           />
         </div>
 
@@ -477,17 +478,17 @@ export default function DownloadsPage() {
                               {row.size}
                             </td>
 
-                            {/* Actions button */}
+                            {/* Actions — Coming Soon */}
                             <td className="px-6 py-4 text-right select-none">
                               <div className="flex justify-end gap-1.5">
                                 {row.formats.map((fmt) => (
                                   <button
                                     key={fmt}
                                     onClick={() => handleDownload(row, fmt)}
-                                    className="flex items-center gap-1 px-3 py-1.5 bg-[#B8860B] hover:bg-[#FFD700] text-black font-extrabold text-[10px] uppercase tracking-wider rounded transition-colors cursor-pointer border-none"
-                                    aria-label={`Download ${row.nameEnglish} as ${fmt}`}
+                                    className="flex items-center gap-1 px-3 py-1.5 bg-[#B8860B]/20 hover:bg-[#B8860B]/40 text-[#FFD700] font-bold text-[10px] uppercase tracking-wider rounded transition-colors cursor-pointer border border-[#B8860B]/30"
+                                    aria-label={`${row.nameEnglish} ${fmt} — coming soon`}
                                   >
-                                    <Download className="w-3 h-3 flex-shrink-0" />
+                                    <Clock className="w-3 h-3 flex-shrink-0" />
                                     <span>{fmt}</span>
                                   </button>
                                 ))}

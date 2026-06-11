@@ -385,7 +385,7 @@ export default function JyotirlingaTempleClient({ place }: JyotirlingaTempleClie
         osc.start(now);
         osc.stop(now + decays[idx] + 0.1);
       });
-    } catch (e) {}
+    } catch {}
   };
 
   // Meditative Shiva mantra chanting synthesis
@@ -426,7 +426,7 @@ export default function JyotirlingaTempleClient({ place }: JyotirlingaTempleClie
       osc2.start(now);
       
       oscRef.current = osc;
-    } catch (e) {}
+    } catch {}
   };
 
   const stopChantSynth = () => {
@@ -441,9 +441,9 @@ export default function JyotirlingaTempleClient({ place }: JyotirlingaTempleClie
           try {
             oscRef.current?.stop();
             ctx.close();
-          } catch (e) {}
+          } catch {}
         }, 600);
-      } catch (e) {}
+      } catch {}
     }
     audioCtxRef.current = null;
     droneGainRef.current = null;
@@ -466,7 +466,6 @@ export default function JyotirlingaTempleClient({ place }: JyotirlingaTempleClie
     if (!startPoint.trim()) return;
 
     const routes: string[] = [];
-    const normalizedStart = startPoint.trim().toLowerCase();
 
     if (travelMode === "air") {
       routes.push(`Book a flight from your origin (${startPoint}) to: ${meta.travelOptions.air.split("is ")[1]?.split(".")[0] || "nearest domestic airport"}.`);

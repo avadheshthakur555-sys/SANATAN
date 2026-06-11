@@ -1,6 +1,5 @@
 import React from "react";
 import { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import Footer from "@/components/layout/Footer";

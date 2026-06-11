@@ -3,14 +3,13 @@
 import React, { useState, useEffect, startTransition } from "react";
 import Link from "next/link";
 import { 
-  BookOpen, Download, Volume2, Bookmark, Heart, 
-  MapPin, Clock, Award, Compass, Search, ChevronRight, Play, Check, AlertCircle, Scroll 
+  BookOpen, Download, Volume2, Bookmark, 
+  MapPin, Clock, Award, Compass, Search, ChevronRight, AlertCircle, Scroll 
 } from "lucide-react";
 import { useLanguageStore } from "@/store/useLanguageStore";
 import { useSacredSound } from "@/lib/sacred-audio";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
 import RelatedKnowledge from "@/components/scripture/RelatedKnowledge";
 
 const getScriptureImage = (slug: string): string => {

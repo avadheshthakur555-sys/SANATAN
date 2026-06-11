@@ -112,14 +112,6 @@ export default function JyotirlingaCatalog({ initialPlaces }: JyotirlingaCatalog
       {filteredPlaces.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPlaces.map((place) => {
-            let imageList: string[] = [];
-            try {
-              imageList = JSON.parse(place.images);
-            } catch (e) {
-              imageList = ["/images/temples/placeholder.jpg"];
-            }
-            const displayImage = imageList[0] || "/images/temples/placeholder.jpg";
-
             return (
               <div 
                 key={place.id}

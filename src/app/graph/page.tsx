@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import GraphCanvas, { GraphNode, GraphEdge, Node } from "@/components/graph/GraphCanvas";
 import Footer from "@/components/layout/Footer";
-import { ArrowLeft, Share2, Sparkles, BookOpen } from "lucide-react";
+import { ArrowLeft, Sparkles, BookOpen } from "lucide-react";
 import { useSacredSound } from "@/lib/sacred-audio";
 import { useLanguageStore } from "@/store/useLanguageStore";
 

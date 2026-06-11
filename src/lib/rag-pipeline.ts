@@ -39,12 +39,26 @@ export async function generateGuruResponse(query: string, mode: string = "Schola
     };
   }
 
-  // 1. Fetch all verses with scripture and chapter details
+  // 1. Fetch verses matching query keywords (filtered at DB layer for performance)
+  const cleanQuery = query.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()?]/g, "").trim();
+  const keywords = cleanQuery.split(/\s+/).filter(word => word.length > 2);
+
+  // Build OR conditions for each keyword across searchable fields
+  const searchConditions = keywords.flatMap(keyword => [
+    { translationEnglish: { contains: keyword } },
+    { translationHindi: { contains: keyword } },
+    { textSanskrit: { contains: keyword } },
+    { textTransliteration: { contains: keyword } },
+    { relatedConcepts: { contains: keyword } },
+  ]);
+
   const verses = await prisma.verse.findMany({
+    where: searchConditions.length > 0 ? { OR: searchConditions } : undefined,
     include: {
       scripture: true,
       chapter: true,
     },
+    take: 50, // Hard limit to prevent memory exhaustion on serverless
   });
 
   if (verses.length === 0) {
@@ -56,8 +70,6 @@ export async function generateGuruResponse(query: string, mode: string = "Schola
   }
 
   // 2. Score verses based on query keyword matching
-  const cleanQuery = query.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()?]/g, "").trim();
-  const keywords = cleanQuery.split(/\s+/).filter(word => word.length > 2);
 
   const scoredVerses = verses.map(verse => {
     let score = 0;
@@ -66,17 +78,17 @@ export async function generateGuruResponse(query: string, mode: string = "Schola
     let concepts: string[] = [];
     try {
       concepts = JSON.parse(verse.relatedConcepts);
-    } catch (_) {}
+    } catch {}
 
     let wordMeaningsList: WordMeaning[] = [];
     try {
       wordMeaningsList = JSON.parse(verse.wordMeanings);
-    } catch (_) {}
+    } catch {}
 
     let commentariesList: Commentary[] = [];
     try {
       commentariesList = JSON.parse(verse.commentaries);
-    } catch (_) {}
+    } catch {}
 
     for (const keyword of keywords) {
       // Check exact concept match (highest weight)

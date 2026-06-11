@@ -1,29 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Volume2,
   VolumeX,
-  Sparkles,
-  BookOpen,
-  MapPin,
-  Calendar,
-  Compass,
-  Layers,
-  ArrowRight,
   Maximize2,
-  X,
-  Play,
-  Pause,
-  ChevronRight,
-  Info
+  X
 } from "lucide-react";
 
-import { ENHANCED_DEITIES_DATA, EnhancedDeity, TimelineStage, GalleryItem, GeographyItem, ScriptureRelation, FestivalItem, EnhancedMantra } from "@/lib/deities-enhanced-data";
-import { useLanguageStore } from "@/store/useLanguageStore";
+import { ENHANCED_DEITIES_DATA, GalleryItem } from "@/lib/deities-enhanced-data";
 import { useSacredSound } from "@/lib/sacred-audio";
 
 import DiyaFlame from "../ui/DiyaFlame";
@@ -38,25 +25,7 @@ interface DeityDetailViewProps {
   slug: string;
 }
 
-// Custom Jagged Torn-Paper Separator
-const TornPaperDivider = ({ position = "top", color = "var(--bg-primary)" }: { position?: "top" | "bottom"; color?: string }) => {
-  const isTop = position === "top";
-  return (
-    <div className={`w-full overflow-hidden leading-[0] ${isTop ? "-mb-px" : "-mt-px"} relative z-30`} style={{ color }}>
-      <svg
-        viewBox="0 0 1200 120"
-        preserveAspectRatio="none"
-        className="relative block w-full h-[25px] md:h-[45px]"
-        style={{ transform: isTop ? "rotate(180deg)" : "none" }}
-      >
-        <path
-          d="M0,0 L1200,0 L1200,80 L1170,75 L1140,85 L1110,65 L1080,78 L1050,70 L1020,83 L990,65 L960,85 L930,72 L900,80 L870,68 L840,88 L810,75 L780,82 L750,70 L720,90 L690,73 L660,85 L630,68 L600,82 L570,75 L540,85 L510,68 L480,80 L450,72 L420,83 L390,70 L360,82 L330,65 L300,80 L270,72 L240,85 L210,68 L180,80 L150,73 L120,82 L90,68 L60,85 L30,70 L0,78 Z"
-          fill="currentColor"
-        />
-      </svg>
-    </div>
-  );
-};
+
 
 // Volumetric Light Ray Overlay
 const VolumetricLight = () => (
@@ -98,12 +67,10 @@ const MuseumSlideFrame = ({ children, className = "" }: { children: React.ReactN
 export default function DeityDetailView({ slug }: DeityDetailViewProps) {
   const router = useRouter();
   const deity = ENHANCED_DEITIES_DATA[slug];
-  const currentLang = useLanguageStore((state) => state.language);
   const { playClick, playNavigate } = useSacredSound();
 
   // Audio Context & Synth States
   const [ambientActive, setAmbientActive] = useState(false);
-  const [bellRinging, setBellRinging] = useState(false);
   const [aartiActive, setAartiActive] = useState(false);
   
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -179,8 +146,6 @@ export default function DeityDetailView({ slug }: DeityDetailViewProps) {
   // Synthesize Temple Bell Chime
   function triggerBellSound() {
     if (typeof window === "undefined") return;
-    setBellRinging(true);
-    setTimeout(() => setBellRinging(false), 500);
 
     try {
       const AudioContextClass = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -213,7 +178,7 @@ export default function DeityDetailView({ slug }: DeityDetailViewProps) {
         osc.start(now);
         osc.stop(now + decays[idx] + 0.1);
       });
-    } catch (e) {
+    } catch {
       console.warn("Audio Context blocked by browser safety policy.");
     }
   }
@@ -280,7 +245,7 @@ export default function DeityDetailView({ slug }: DeityDetailViewProps) {
       osc2.start(now);
       osc2Ref.current = osc2;
 
-    } catch (e) {
+    } catch {
       console.warn("Drone audio could not start.");
     }
   }
@@ -298,9 +263,9 @@ export default function DeityDetailView({ slug }: DeityDetailViewProps) {
             osc1Ref.current?.stop();
             osc2Ref.current?.stop();
             ctx.close();
-          } catch (e) {}
+          } catch {}
         }, 700);
-      } catch (e) {}
+      } catch {}
     }
     audioCtxRef.current = null;
     droneGainRef.current = null;

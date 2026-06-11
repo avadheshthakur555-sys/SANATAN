@@ -9,7 +9,7 @@ export interface AudioPlayerProps {
   verseText?: string;
 }
 
-const AudioPlayer = memo<AudioPlayerProps>(({ audioUrl, verseText }) => {
+const AudioPlayer = memo<AudioPlayerProps>(({ verseText }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1.0);
   const { playClick, playOm } = useSacredSound();

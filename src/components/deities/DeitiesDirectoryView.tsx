@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { DEITIES_DATA } from "@/lib/deities-data";
-import { useLanguageStore } from "@/store/useLanguageStore";
 import { useSacredSound } from "@/lib/sacred-audio";
 import SacredImage from "../ui/SacredImage";
 import Breadcrumb from "../ui/Breadcrumb";
@@ -23,27 +22,9 @@ const CATEGORIES = [
 ];
 
 export default function DeitiesDirectoryView() {
-  const currentLang = useLanguageStore((state) => state.language);
   const { playClick, playNavigate } = useSacredSound();
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const observer = new MutationObserver(() => {
-        setIsDarkMode(document.documentElement.classList.contains("dark"));
-      });
-      observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-      
-      const dark = document.documentElement.classList.contains("dark");
-      requestAnimationFrame(() => {
-        setIsDarkMode(dark);
-      });
-      
-      return () => observer.disconnect();
-    }
-  }, []);
 
   const deitiesList = Object.values(DEITIES_DATA);
 

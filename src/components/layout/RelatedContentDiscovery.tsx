@@ -19,7 +19,13 @@ const RelatedContentDiscovery = memo<RelatedContentDiscoveryProps>(({ category }
   const { playNavigate } = useSacredSound();
 
   // Generate data based on category
-  const getRelatedData = () => {
+  const getRelatedData = (): {
+    scriptures: RelatedItem[];
+    temples: RelatedItem[];
+    deities: RelatedItem[];
+    festivals: RelatedItem[];
+    articles: RelatedItem[];
+  } => {
     switch (category) {
       case "shiva":
         return {

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { MapPin, Info, Compass, Shield, ArrowRight, Search, Activity, Landmark } from "lucide-react";
+import { Compass, ArrowRight, Search, Landmark } from "lucide-react";
 
 interface SacredPlace {
   id: string;

@@ -1,9 +1,8 @@
 "use client";
 
 import React, { memo, useState } from "react";
-import { Bookmark, Share2, Copy, Check, ChevronDown, ChevronUp, Book } from "lucide-react";
+import { Bookmark, Share2, Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
 import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
 import AudioPlayer from "./AudioPlayer";
 import { useSacredSound } from "@/lib/sacred-audio";
 
@@ -45,7 +44,7 @@ const VerseCard = memo<VerseCardProps>(({
   const parsedWords = React.useMemo(() => {
     try {
       return JSON.parse(wordMeanings) as WordMeaning[];
-    } catch (_) {
+    } catch {
       return [];
     }
   }, [wordMeanings]);
@@ -53,7 +52,7 @@ const VerseCard = memo<VerseCardProps>(({
   const parsedComm = React.useMemo(() => {
     try {
       return JSON.parse(commentary) as { shankaracharya?: string; ramanujacharya?: string };
-    } catch (_) {
+    } catch {
       return {};
     }
   }, [commentary]);

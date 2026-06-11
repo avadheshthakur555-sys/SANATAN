@@ -3,6 +3,7 @@
 import React, { useState, useEffect, startTransition } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { useLanguageStore } from "@/store/useLanguageStore";
 import { 
   Compass, History, Globe, Leaf, ChevronDown, CheckCircle, Sparkles, Scroll as ScrollIcon, Feather,
@@ -925,7 +926,7 @@ export default function HistoryClient() {
       {/* Narrative Chapter Sections (Graphic Novel format: 700px - 1200px heights) */}
       <div className="relative w-full flex flex-col gap-24 md:gap-36 z-10">
         
-        {CHAPTERS.map((c, index) => {
+        {CHAPTERS.map((c) => {
           const isOdd = c.id % 2 !== 0;
           const romanNum = ROMAN_NUMERALS[c.id];
           const isCurrent = activeEra === c.id;
@@ -981,9 +982,12 @@ export default function HistoryClient() {
                     {(() => {
                       const isIllustration = c.imagePath.endsWith(".png") && !c.imagePath.includes("/deities/");
                       return (
-                        <img 
+                        <Image 
                           src={c.imagePath} 
                           alt={title} 
+                          fill
+                          sizes="(max-width: 768px) 100vw, 60vw"
+                          priority={c.id === 1}
                           className={`w-full h-full object-cover select-none filter sepia-[0.08] contrast-[1.05] saturate-[1.1] brightness-[1.02] group-hover:sepia-0 group-hover:saturate-[1.2] transition-all duration-[1200ms] ${
                             isIllustration 
                               ? "mix-blend-multiply dark:mix-blend-screen dark:opacity-85" 

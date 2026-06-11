@@ -50,6 +50,7 @@ export default function SacredImage({ src, alt, className = "", fallbackText = "
   }
 
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
       alt={alt}

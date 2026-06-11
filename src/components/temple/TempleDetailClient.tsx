@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef, memo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ChevronDown, MapPin, Landmark, ArrowRight, ArrowLeft, Volume2, ShieldAlert, Calendar, Compass, Plane, Train, Car, History, CheckCircle2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, MapPin, Landmark, ArrowRight, ArrowLeft, Volume2, Calendar, Compass, Plane, Train, Car, CheckCircle2 } from "lucide-react";
 import DiyaFlame from "../ui/DiyaFlame";
 import GoldParticleField from "../effects/GoldParticleField";
 import { useSacredSound } from "@/lib/sacred-audio";
@@ -849,7 +848,7 @@ export default function TempleDetailClient({ place, allPlaces }: TempleDetailCli
   const filterRef = useRef<BiquadFilterNode | null>(null);
   const aartiTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { playClick, playSuccess } = useSacredSound();
+  const { playClick } = useSacredSound();
 
   // Find next/prev temples in the local category list to drive the pilgrimage wheel
   const siblings = allPlaces.filter((p) => p.type === place.type);
@@ -980,9 +979,9 @@ export default function TempleDetailClient({ place, allPlaces }: TempleDetailCli
         setTimeout(() => {
           try {
             ctx.close();
-          } catch (e) {}
+          } catch {}
         }, 700);
-      } catch (e) {}
+      } catch {}
     }
     audioCtxRef.current = null;
     droneGainRef.current = null;
