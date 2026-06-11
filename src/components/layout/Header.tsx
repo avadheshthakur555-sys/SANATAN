@@ -3,7 +3,7 @@
 import React, { memo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Menu, X, Sparkles, ArrowRight, Compass } from "lucide-react";
+import { Search, Menu, X, Sparkles, ArrowRight, Compass, Volume2, VolumeX } from "lucide-react";
 import LanguageToggle from "@/components/ui/LanguageToggle";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { useSacredSound } from "@/lib/sacred-audio";
@@ -25,7 +25,14 @@ const Header = memo(() => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [compassOpen, setCompassOpen] = useState(false);
   const pathname = usePathname();
-  const { playClick, playNavigate } = useSacredSound();
+  const { playClick, playNavigate, isMuted, toggleMuted } = useSacredSound();
+  const [mounted, setMounted] = useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const soundMuted = mounted ? isMuted : false;
 
   const handleNavClick = () => {
     playNavigate();
@@ -132,6 +139,18 @@ const Header = memo(() => {
 
           {/* Language selector (Desktop) */}
           <div className="hidden xl:flex items-center gap-2">
+            <button
+              onClick={() => {
+                toggleMuted();
+                if (soundMuted) {
+                  setTimeout(() => playClick(), 50);
+                }
+              }}
+              className="p-2 rounded-full border border-[var(--border-gold)]/30 text-[var(--text-secondary)] bg-[var(--bg-secondary)] hover:text-[var(--accent-gold)] hover:border-[var(--accent-gold)] transition-colors cursor-pointer"
+              aria-label={soundMuted ? "Unmute sounds" : "Mute sounds"}
+            >
+              {soundMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
             <LanguageToggle />
             <ThemeToggle />
           </div>
@@ -265,8 +284,20 @@ const Header = memo(() => {
           {/* Footer buttons inside mobile overlay */}
           <div className="mt-auto border-t border-[var(--border-gold)]/25 pt-6 flex flex-col gap-4">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-[var(--text-secondary)]">Theme & Language</span>
+              <span className="text-xs text-[var(--text-secondary)]">Sound, Theme & Language</span>
               <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    toggleMuted();
+                    if (soundMuted) {
+                      setTimeout(() => playClick(), 50);
+                    }
+                  }}
+                  className="p-2 rounded-full border border-[var(--border-gold)]/30 text-[var(--text-secondary)] bg-[var(--bg-secondary)] hover:text-[var(--accent-gold)] hover:border-[var(--accent-gold)] transition-colors cursor-pointer"
+                  aria-label={soundMuted ? "Unmute sounds" : "Mute sounds"}
+                >
+                  {soundMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                </button>
                 <LanguageToggle />
                 <ThemeToggle />
               </div>

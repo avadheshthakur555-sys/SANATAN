@@ -1,5 +1,7 @@
 // src/lib/sacred-audio.ts — Om Sound Engine (Zero Dependencies)
 
+import { useSoundStore } from '@/store/useSoundStore';
+
 const PHI = 1.618033988749895;
 const OM_BASE_HZ = 136.1;
 
@@ -33,6 +35,9 @@ function getAudioContext(): AudioContext | null {
 }
 
 export function playTone(tone: SacredTone, volume = 0.15): void {
+  // Check global mute state
+  if (useSoundStore.getState().isMuted) return;
+
   const ctx = getAudioContext();
   if (!ctx) return;
 
@@ -62,6 +67,9 @@ export function playTone(tone: SacredTone, volume = 0.15): void {
 }
 
 export function playOmChant(): void {
+  // Check global mute state
+  if (useSoundStore.getState().isMuted) return;
+
   const ctx = getAudioContext();
   if (!ctx) return;
 
@@ -114,7 +122,10 @@ export function playOmChant(): void {
 
 // React Hook
 export function useSacredSound() {
+  const { isMuted, toggleMuted } = useSoundStore();
   return {
+    isMuted,
+    toggleMuted,
     playOm: () => playOmChant(),
     playClick: () => playTone('click'),
     playSuccess: () => playTone('success'),
