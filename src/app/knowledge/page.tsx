@@ -90,7 +90,7 @@ const CONCEPTS: Record<string, ConceptData> = {
     translationEnglish: "You have a right to perform your prescribed duties, but you are not entitled to the fruits of your actions. Let not the fruits of action be your motive, nor let your attachment be to inaction.",
     summary: "Karma is the law of cause and effect. Every action generates a force of energy that returns to us in like kind. It emphasizes personal accountability, indicating that our choices shape our destiny.",
     cursiveSubhead: "The Law of Actions & Consequence",
-    image: "/images/knowledge/artha.png",
+    image: "/images/knowledge/karma.png",
     pillars: [
       { title: "Sanchita Karma", desc: "The accumulated store of past actions waiting to bear fruit." },
       { title: "Prarabdha Karma", desc: "The portion of past karma currently being experienced in present life." },
@@ -193,7 +193,7 @@ const CONCEPTS: Record<string, ConceptData> = {
     translationEnglish: "Yoga is the intentional restraint of the modifications of the mind-stuff.",
     summary: "Yoga is the union of the individual consciousness with the universal consciousness. It comprises systematic paths of mental control, physical discipline, and devotion designed to achieve spiritual liberation.",
     cursiveSubhead: "The Divine Union of Consciousness",
-    image: "/images/knowledge/kama.png",
+    image: "/images/knowledge/yoga.png",
     pillars: [
       { title: "Jnana Yoga", desc: "The path of wisdom, self-inquiry, and intellectual realization." },
       { title: "Bhakti Yoga", desc: "The path of absolute love, devotion, and surrender to the Divine." },
@@ -238,6 +238,244 @@ const CONCEPTS: Record<string, ConceptData> = {
 };
 
 const CONCEPT_IDS = ["dharma", "karma", "moksha", "yoga"] as const;
+
+function ConceptVisual({ conceptId }: { conceptId: string }) {
+  if (conceptId === "dharma") {
+    return (
+      <div className="w-full flex flex-col items-center gap-4 py-4 select-none">
+        <div className="relative w-48 h-48 md:w-56 md:h-56 flex items-center justify-center">
+          <svg className="w-full h-full animate-[spin_25s_linear_infinite]" viewBox="0 0 200 200" fill="none">
+            <defs>
+              <radialGradient id="goldGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#FFD700" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="#FAF7F0" stopOpacity="0" />
+              </radialGradient>
+              <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#B8860B" />
+                <stop offset="50%" stopColor="#FFD700" />
+                <stop offset="100%" stopColor="#8C2D19" />
+              </linearGradient>
+            </defs>
+            <circle cx="100" cy="100" r="90" fill="url(#goldGlow)" />
+            {/* Outer Rim */}
+            <circle cx="100" cy="100" r="80" stroke="url(#goldGrad)" strokeWidth="3" />
+            <circle cx="100" cy="100" r="74" stroke="url(#goldGrad)" strokeWidth="1" strokeDasharray="3,3" />
+            {/* Inner Hub */}
+            <circle cx="100" cy="100" r="24" stroke="url(#goldGrad)" strokeWidth="2.5" fill="#FAF7F0" />
+            <circle cx="100" cy="100" r="16" stroke="url(#goldGrad)" strokeWidth="1" strokeDasharray="2,2" />
+            
+            {/* Spokes (8 Spokes) */}
+            {Array.from({ length: 8 }).map((_, idx) => {
+              const angle = (idx * 45 * Math.PI) / 180;
+              const x1 = (100 + 24 * Math.cos(angle)).toFixed(2);
+              const y1 = (100 + 24 * Math.sin(angle)).toFixed(2);
+              const x2 = (100 + 74 * Math.cos(angle)).toFixed(2);
+              const y2 = (100 + 74 * Math.sin(angle)).toFixed(2);
+              return (
+                <line
+                  key={idx}
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="url(#goldGrad)"
+                  strokeWidth="2.5"
+                />
+              );
+            })}
+          </svg>
+          {/* Central static Om */}
+          <div className="absolute font-sanskrit text-2xl text-[#8C2D19] font-bold select-none">ॐ</div>
+        </div>
+        <div className="text-left w-full mt-2 border-t border-[#B8860B]/15 pt-3">
+          <span className="text-[10px] text-[#8C2D19] font-bold block mb-1">Dharma Chakra Spokes (धर्मचक्र अष्टगुण)</span>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] text-[#5c524e] font-serif">
+            <div>• Satya (Truth)</div>
+            <div>• Daya (Compassion)</div>
+            <div>• Dana (Generosity)</div>
+            <div>• Shaucha (Purity)</div>
+            <div>• Ahimsa (Non-injury)</div>
+            <div>• Kshama (Patience)</div>
+            <div>• Dama (Self-control)</div>
+            <div>• Tapas (Austerity)</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (conceptId === "karma") {
+    return (
+      <div className="w-full flex flex-col items-center gap-4 py-4 select-none">
+        <svg className="w-full max-w-[240px]" viewBox="0 0 240 220" fill="none">
+          <defs>
+            <linearGradient id="karmaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#B8860B" />
+              <stop offset="100%" stopColor="#8C2D19" />
+            </linearGradient>
+            <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#B8860B" />
+            </marker>
+          </defs>
+
+          {/* Sanchita - Top Cloud */}
+          <g transform="translate(120, 30)">
+            <path d="M-30,20 C-45,20 -50,5 -35,-5 C-35,-20 -15,-25 -5,-15 C5,-25 25,-20 25,-5 C40,5 35,20 20,20 Z" fill="#F3ECE0" stroke="url(#karmaGrad)" strokeWidth="1.5" />
+            <text x="0" y="2" textAnchor="middle" className="font-serif text-[10px] font-bold fill-[#8C2D19]">SANCHITA</text>
+            <text x="0" y="12" textAnchor="middle" className="font-sanskrit text-[8px] fill-[#b8860b] font-bold">सञ्चित (Cloud Store)</text>
+          </g>
+
+          {/* Flow Line from Sanchita to Prarabdha */}
+          <path d="M 100 45 L 60 100" stroke="#B8860B" strokeWidth="1.5" strokeDasharray="3,3" markerEnd="url(#arrow)" />
+
+          {/* Prarabdha - Left Cup */}
+          <g transform="translate(15, 110)">
+            <rect x="0" y="0" width="75" height="35" rx="6" fill="#F3ECE0" stroke="url(#karmaGrad)" strokeWidth="1.5" />
+            <text x="37" y="15" textAnchor="middle" className="font-serif text-[9px] font-bold fill-[#8C2D19]">PRARABDHA</text>
+            <text x="37" y="26" textAnchor="middle" className="font-sanskrit text-[8px] fill-[#b8860b] font-bold">प्रारब्ध (Allocated)</text>
+          </g>
+
+          {/* Kriyamana - Right Seed/Sprout */}
+          <g transform="translate(150, 110)">
+            <rect x="0" y="0" width="75" height="35" rx="6" fill="#F3ECE0" stroke="url(#karmaGrad)" strokeWidth="1.5" />
+            <text x="37" y="15" textAnchor="middle" className="font-serif text-[9px] font-bold fill-[#8C2D19]">KRIYAMANA</text>
+            <text x="37" y="26" textAnchor="middle" className="font-sanskrit text-[8px] fill-[#b8860b] font-bold">क्रियमाण (New Deeds)</text>
+          </g>
+
+          {/* Flow from Kriyamana to Sanchita */}
+          <path d="M 188 110 L 140 45" stroke="#B8860B" strokeWidth="1.5" markerEnd="url(#arrow)" />
+
+          {/* Sprout visual underneath Kriyamana */}
+          <path d="M 187 145 C 187 160 170 160 160 170 M 187 150 C 195 155 205 150 210 160" stroke="#8C2D19" strokeWidth="1.5" fill="none" />
+          <circle cx="187" cy="147" r="2" fill="#8C2D19" />
+
+          {/* Scale under Prarabdha */}
+          <path d="M 32 165 L 72 165 M 52 145 L 52 175" stroke="#8C2D19" strokeWidth="1.5" />
+          <path d="M 32 165 C 32 175 42 175 42 165 M 62 165 C 62 175 72 175 72 165" stroke="#B8860B" strokeWidth="1" fill="none" />
+        </svg>
+        <div className="text-left w-full mt-1 border-t border-[#B8860B]/15 pt-3 text-[10px] text-[#5c524e] font-serif leading-relaxed">
+          <span className="text-[#8C2D19] font-bold block mb-1">The Cycle of Actions (कर्मचक्र सिद्धान्त)</span>
+          Current deeds (Kriyamana) rise to accumulate in the storehouse (Sanchita), from which specific results (Prarabdha) are allocated to determine present experiences.
+        </div>
+      </div>
+    );
+  }
+
+  if (conceptId === "moksha") {
+    return (
+      <div className="w-full flex flex-col items-center gap-4 py-4 select-none">
+        <svg className="w-full max-w-[220px]" viewBox="0 0 220 220" fill="none">
+          <defs>
+            <radialGradient id="centerSun" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#FFD700" stopOpacity="0.8" />
+              <stop offset="40%" stopColor="#FF8C00" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#FAF7F0" stopOpacity="0" />
+            </radialGradient>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#B8860B" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#8C2D19" stopOpacity="0.3" />
+            </linearGradient>
+          </defs>
+
+          {/* Central Sun */}
+          <circle cx="110" cy="110" r="30" fill="url(#centerSun)" />
+          <text x="110" y="115" textAnchor="middle" className="font-sanskrit text-lg font-bold fill-[#8C2D19] select-none">ॐ</text>
+
+          {/* Concentric Rings */}
+          <circle cx="110" cy="110" r="48" stroke="url(#ringGrad)" strokeWidth="1" />
+          <circle cx="110" cy="110" r="66" stroke="url(#ringGrad)" strokeWidth="1" strokeDasharray="3,3" />
+          <circle cx="110" cy="110" r="84" stroke="url(#ringGrad)" strokeWidth="1" />
+
+          {/* Labels along the rings */}
+          <rect x="75" y="12" width="70" height="13" rx="3" fill="#FAF7F0" stroke="#B8860B" strokeWidth="0.5" />
+          <text x="110" y="21" textAnchor="middle" className="font-serif text-[7px] font-bold fill-[#8C2D19]">1. SALOKYA (सालोक्य)</text>
+
+          <rect x="75" y="38" width="70" height="13" rx="3" fill="#FAF7F0" stroke="#B8860B" strokeWidth="0.5" />
+          <text x="110" y="47" textAnchor="middle" className="font-serif text-[7px] font-bold fill-[#8C2D19]">2. SAMEEPYA (सामीप्य)</text>
+
+          <rect x="75" y="160" width="70" height="13" rx="3" fill="#FAF7F0" stroke="#B8860B" strokeWidth="0.5" />
+          <text x="110" y="169" textAnchor="middle" className="font-serif text-[7px] font-bold fill-[#8C2D19]">3. SAROOPYA (सारूप्य)</text>
+
+          <rect x="75" y="186" width="70" height="13" rx="3" fill="#FAF7F0" stroke="#B8860B" strokeWidth="0.5" />
+          <text x="110" y="195" textAnchor="middle" className="font-serif text-[7px] font-bold fill-[#8C2D19]">4. SAYUJYA (सायुज्य)</text>
+        </svg>
+        <div className="text-left w-full mt-1 border-t border-[#B8860B]/15 pt-3 text-[10px] text-[#5c524e] font-serif leading-relaxed">
+          <span className="text-[#8C2D19] font-bold block mb-1">Four Stages of Union (मोक्ष सोपान क्रम)</span>
+          Seekers ascend from Salokya (dwelling in the divine realm) to Sameepya (closeness), to Saroopya (form alignment), and finally Sayujya (absolute identity and merging with Brahman).
+        </div>
+      </div>
+    );
+  }
+
+  if (conceptId === "yoga") {
+    return (
+      <div className="w-full flex flex-col items-center gap-4 py-4 select-none">
+        <svg className="w-full max-w-[220px]" viewBox="0 0 220 220" fill="none">
+          <defs>
+            <linearGradient id="lotusGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFD700" />
+              <stop offset="50%" stopColor="#F97316" />
+              <stop offset="100%" stopColor="#8C2D19" />
+            </linearGradient>
+          </defs>
+
+          {/* Central core */}
+          <circle cx="110" cy="110" r="20" stroke="url(#lotusGrad)" strokeWidth="1.5" fill="#F3ECE0" />
+          <text x="110" y="114" textAnchor="middle" className="font-sanskrit text-[10px] font-bold fill-[#8C2D19]">योग</text>
+
+          {/* Petals (8 Limbs of Ashtanga Yoga) */}
+          {Array.from({ length: 8 }).map((_, idx) => {
+            const angle = idx * 45;
+            const angleRad = (angle * Math.PI) / 180;
+            // Draw a beautiful leaf/petal shape outwards
+            const startX = (110 + 20 * Math.cos(angleRad)).toFixed(2);
+            const startY = (110 + 20 * Math.sin(angleRad)).toFixed(2);
+            const tipX = (110 + 75 * Math.cos(angleRad)).toFixed(2);
+            const tipY = (110 + 75 * Math.sin(angleRad)).toFixed(2);
+            
+            // Side curves
+            const controlAngleLeft = ((angle - 15) * Math.PI) / 180;
+            const controlAngleRight = ((angle + 15) * Math.PI) / 180;
+            const leftX = (110 + 50 * Math.cos(controlAngleLeft)).toFixed(2);
+            const leftY = (110 + 50 * Math.sin(controlAngleLeft)).toFixed(2);
+            const rightX = (110 + 50 * Math.cos(controlAngleRight)).toFixed(2);
+            const rightY = (110 + 50 * Math.sin(controlAngleRight)).toFixed(2);
+
+            const pathD = `M ${startX} ${startY} Q ${leftX} ${leftY} ${tipX} ${tipY} Q ${rightX} ${rightY} ${startX} ${startY}`;
+
+            return (
+              <path
+                key={idx}
+                d={pathD}
+                stroke="url(#lotusGrad)"
+                strokeWidth="1.5"
+                fill="#F3ECE0"
+                fillOpacity="0.3"
+                className="hover:fill-[#F97316]/10 hover:fill-opacity-100 transition-all duration-300 cursor-help"
+              />
+            );
+          })}
+
+          {/* Texts around the Lotus */}
+          <text x="110" y="24" textAnchor="middle" className="font-serif text-[7.5px] font-bold fill-[#8C2D19]">1. Yama</text>
+          <text x="175" y="50" textAnchor="start" className="font-serif text-[7.5px] font-bold fill-[#8C2D19]">2. Niyama</text>
+          <text x="195" y="114" textAnchor="start" className="font-serif text-[7.5px] font-bold fill-[#8C2D19]">3. Asana</text>
+          <text x="175" y="178" textAnchor="start" className="font-serif text-[7.5px] font-bold fill-[#8C2D19]">4. Pranayama</text>
+          <text x="110" y="204" textAnchor="middle" className="font-serif text-[7.5px] font-bold fill-[#8C2D19]">5. Pratyahara</text>
+          <text x="45" y="178" textAnchor="end" className="font-serif text-[7.5px] font-bold fill-[#8C2D19]">6. Dharana</text>
+          <text x="25" y="114" textAnchor="end" className="font-serif text-[7.5px] font-bold fill-[#8C2D19]">7. Dhyana</text>
+          <text x="45" y="50" textAnchor="end" className="font-serif text-[7.5px] font-bold fill-[#8C2D19]">8. Samadhi</text>
+        </svg>
+        <div className="text-left w-full mt-1 border-t border-[#B8860B]/15 pt-3 text-[10px] text-[#5c524e] font-serif leading-relaxed">
+          <span className="text-[#8C2D19] font-bold block mb-1">Ashtanga Lotus (अष्टाङ्ग योग चक्र)</span>
+          Each petal represents one of the eight limbs of yoga. Studying the sequence guides the practitioner from ethical foundation to ultimate cosmic absorption.
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
 
 function KnowledgePageContent() {
   const searchParams = useSearchParams();
@@ -524,41 +762,52 @@ function KnowledgePageContent() {
                       <Scroll className="w-4 h-4 text-[#8C2D19]" />
                       {activeData.deepDive.title}
                     </h4>
-                    
-                    <div className="flex flex-col gap-6">
-                      {activeData.deepDive.sections.map((section, idx) => (
-                        <div key={idx} className="bg-[#F3ECE0]/30 border border-[#B8860B]/15 rounded-2xl p-5 md:p-6 shadow-sm">
-                          <div className="flex items-baseline gap-2 border-b border-[#B8860B]/15 pb-2 mb-3 flex-wrap">
-                            <h5 className="font-serif text-sm md:text-base font-bold text-[#8C2D19]">
-                              {section.subtitle}
-                            </h5>
-                            {section.subtitleSanskrit && (
-                              <span className="font-sanskrit text-xs text-[#b8860b] font-bold ml-1.5 text-sanskrit font-normal">
-                                ({section.subtitleSanskrit})
-                              </span>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                      {/* Left Side: Visual Scriptural Reference */}
+                      <div className="lg:col-span-5 bg-[#F3ECE0]/30 border border-[#B8860B]/15 rounded-2xl p-5 md:p-6 flex flex-col items-center justify-center shadow-inner relative overflow-hidden select-none">
+                        <span className="text-[10px] text-[#8C2D19] uppercase font-mono tracking-widest block font-bold mb-3 border-b border-[#B8860B]/15 pb-2 w-full text-center">
+                          Visual Reference • चित्र संकेत
+                        </span>
+                        <ConceptVisual conceptId={activeId} />
+                      </div>
+
+                      {/* Right Side: Text Sections */}
+                      <div className="lg:col-span-7 flex flex-col gap-6">
+                        {activeData.deepDive.sections.map((section, idx) => (
+                          <div key={idx} className="bg-[#F3ECE0]/30 border border-[#B8860B]/15 rounded-2xl p-5 md:p-6 shadow-sm">
+                            <div className="flex items-baseline gap-2 border-b border-[#B8860B]/15 pb-2 mb-3 flex-wrap">
+                              <h5 className="font-serif text-sm md:text-base font-bold text-[#8C2D19]">
+                                {section.subtitle}
+                              </h5>
+                              {section.subtitleSanskrit && (
+                                <span className="font-sanskrit text-xs text-[#b8860b] font-bold ml-1.5 text-sanskrit font-normal">
+                                  ({section.subtitleSanskrit})
+                                </span>
+                              )}
+                            </div>
+                            
+                            <p className="text-[#5c524e] text-xs md:text-sm leading-relaxed font-serif mb-4 whitespace-pre-line">
+                              {section.content}
+                            </p>
+
+                            {section.items && section.items.length > 0 && (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+                                {section.items.map((item, itemIdx) => (
+                                  <div key={itemIdx} className="bg-[#FAF7F0] border border-[#B8860B]/10 rounded-xl p-3.5 hover:shadow-sm transition-all duration-300">
+                                    <span className="text-[#8C2D19] text-xs font-bold block font-serif">
+                                      {item.title}
+                                    </span>
+                                    <p className="text-[#5c524e] text-[11px] leading-relaxed mt-1 font-serif">
+                                      {item.desc}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
                             )}
                           </div>
-                          
-                          <p className="text-[#5c524e] text-xs md:text-sm leading-relaxed font-serif mb-4 whitespace-pre-line">
-                            {section.content}
-                          </p>
-
-                          {section.items && section.items.length > 0 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
-                              {section.items.map((item, itemIdx) => (
-                                <div key={itemIdx} className="bg-[#FAF7F0] border border-[#B8860B]/10 rounded-xl p-3.5 hover:shadow-sm transition-all duration-300">
-                                  <span className="text-[#8C2D19] text-xs font-bold block font-serif">
-                                    {item.title}
-                                  </span>
-                                  <p className="text-[#5c524e] text-[11px] leading-relaxed mt-1 font-serif">
-                                    {item.desc}
-                                  </p>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
